@@ -1,0 +1,31 @@
+# Maven and compiler output
+target/
+build/
+out/
+dist/
+*.class
+
+# Runtime output
+*.log
+data/backups/
+website/.env
+website/**/.env
+website/vendor/
+website/**/callback_log.txt
+website/**/callback_card.log
+website/**/callback_error.log
+website/**/ImS-Account.txt
+
+# Local/legacy artifacts
+backupsrc/
+backupsql/
+*.zip
+*.jar
+.idea/
+.vscode/
+*.iml
+
+# Temporary files
+*.tmp
+*.bak
+hs_err_pid*.log

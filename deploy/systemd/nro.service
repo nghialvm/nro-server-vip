@@ -1,0 +1,15 @@
+[Unit]
+Description=AWN Game Backend
+After=network.target mariadb.service mysql.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/nro
+ExecStart=/usr/bin/java -Xms128m -Xmx3g -Xss256k -Dfile.encoding=UTF-8 -Dawn.selfRestart=false -jar /home/ubuntu/nro/backend/target/game-backend.jar
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

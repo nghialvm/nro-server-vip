@@ -1,0 +1,59 @@
+RewriteEngine On
+RewriteBase /
+
+DirectoryIndex Trang-Chu.php
+
+# Nếu tệp hoặc thư mục không tồn tại
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# --- Trang đăng nhập/đăng ký ---
+RewriteRule ^Auth/Lor$ Auth/Loreg.php [QSA,L]
+
+# --- API ---
+RewriteRule ^Api/(Auth|Logout|ChangePassword|Callback|Card|Forum|Post|KickPlayer|InfoGame|Active)$ Api/$1.php [QSA,L]
+RewriteRule ^Api/Cron$ Api/Bank/CronAcb.php [QSA,L]
+
+# --- Users Pages ---
+RewriteRule ^Users/(Post|Register|Uploads|Payments|ChangePassword|Disconnect|Admin|Active|Giftcode)$ Pages/$1.php [QSA,L]
+
+# Cho phép truy cập URL mà không cần .php
+RewriteRule ^Auth/Lor$ Auth/Loreg.php [L]
+RewriteRule ^Users/(Post|Register|Uploads|CheckData|Payments|ChangePassword|Thuhoi|Lsgiaodich)$ Pages/$1.php [L]
+RewriteRule ^Api/(Auth|Logout|ChangePassword|Callback|Card|Forum|Post)$ Api/$1.php [L]
+
+# --- Dashboard ---
+RewriteRule ^Dashboard/(Home|Post)$ Public/Pages/Dashboard/$1.php [QSA,L]
+
+# --- Xóa .php ---
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [QSA,L]
+
+# Lỗi
+ErrorDocument 404 /Home
+ErrorDocument 500 "Vui lòng thử lại sau 1 phút nữa."
+
+Options -Indexes
+
+<FilesMatch "(\.env|\.git|\.htaccess|\.log|\.bak|\.sql|\.zip|\.tar|\.gz)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+AddType application/octet-stream .ipa .apk .rar .jar
+
+<FilesMatch "\.(jpg|jpeg|png|gif|svg|css|js)$">
+    Header set Cache-Control "max-age=31536000, public"
+</FilesMatch>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE application/javascript application/json text/css text/html text/plain
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set X-Frame-Options "DENY"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+</IfModule>

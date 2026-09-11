@@ -1,0 +1,31 @@
+package QuanLiBoss;
+
+
+
+public enum BossType {
+
+    YARDART,
+    FINAL,
+    SKILLSUMMONED,
+    BROLY,
+    PLAYERAO,
+    PHOBAN,
+    PHOBANDT,
+    PHOBANBDKB,
+    PHOBANCDRD,
+    PHOBANKGHD,
+    PHOBANBBH,
+    TRUNGTHU_EVENT,
+    HALLOWEEN_EVENT,
+    CHRISTMAS_EVENT,
+    HUNGVUONG_EVENT,
+    TET_EVENT,
+    VU_LAN_EVENT,
+    VALENTINE_EVENT,
+    NOMAL
+}
+
+
+
+
+

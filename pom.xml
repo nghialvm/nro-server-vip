@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>vn.awn</groupId>
+    <artifactId>awn-version</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>AWN Version</name>
+    <description>AWN game server with optional Swing management UI</description>
+
+    <modules>
+        <module>backend</module>
+        <module>management-ui</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
+
+        <lombok.version>1.18.30</lombok.version>
+        <mysql.version>5.1.49</mysql.version>
+        <hikari.version>5.1.0</hikari.version>
+        <gson.version>2.8.2</gson.version>
+        <json-simple.version>1.1.1</json-simple.version>
+        <okhttp.version>3.0.0</okhttp.version>
+        <commons-lang.version>2.6</commons-lang.version>
+        <slf4j.version>2.0.0-alpha1</slf4j.version>
+        <flatlaf.version>3.4.1</flatlaf.version>
+        <flatlaf.themes.version>3.6.1</flatlaf.themes.version>
+        <pcap4j.version>1.7.4</pcap4j.version>
+    </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                        <parameters>true</parameters>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.5.3</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
