@@ -13,7 +13,9 @@ import consts.ConstRatio;
 import nro.clan.Clan;
 import nro.effect.EffectSkillService;
 import nro.map.ItemMap;
+import nro.map.GiaiCuuMiNuong.GiaiCuuMiNuong;
 import nro.map.Zone;
+import models.Item.Item;
 import nro.player.Player;
 import nro.services.Fun.ChangeMapService;
 import nro.services.Service;
@@ -24,9 +26,14 @@ import nro.skill.SkillService;
 public class MiNuongClan extends Boss {
 
     private Clan clan;
+    private GiaiCuuMiNuong giaiCuuMiNuong;
     private long lastTimeSkill = System.currentTimeMillis();
 
     public MiNuongClan(Zone zone, Clan clan) throws Exception {
+        this(zone, clan, null);
+    }
+
+    public MiNuongClan(Zone zone, Clan clan, GiaiCuuMiNuong giaiCuuMiNuong) throws Exception {
         super(PHOBANBBH, BossID.MI_NUONG_CLAN, new BossData(
                 "Mị nương",
                 ConstPlayer.TRAI_DAT,
@@ -55,6 +62,7 @@ public class MiNuongClan extends Boss {
         ));
         this.zone = zone;
         this.clan = clan;
+        this.giaiCuuMiNuong = giaiCuuMiNuong;
     }
 
     private static int[][] generateSkills(int... skillIds) {
@@ -71,6 +79,9 @@ public class MiNuongClan extends Boss {
     @Override
     public synchronized double injured(Player plAtt, double damage, boolean piercing, boolean isMobAttack) {
         if (!this.isDie()) {
+            if (this.giaiCuuMiNuong != null && !canDamageInGiaiCuu(plAtt)) {
+                return 0;
+            }
             if (!piercing && Util.isTrue(100, 1000)) {
                 this.chat("Xí hụt");
                 return 0;
@@ -85,7 +96,8 @@ public class MiNuongClan extends Boss {
                 }
                 damage = 1;
             }
-            if (plAtt != null && plAtt.clan != null && plAtt.clan.BossOfTheGang != null && plAtt.clanMember != null) {
+            if (plAtt != null && plAtt.clan != null && plAtt.clanMember != null
+                    && (plAtt.clan.BossOfTheGang != null || this.giaiCuuMiNuong != null)) {
                 plAtt.clanMember.memberDamage += damage;
             }
             this.nPoint.subHP(damage);
@@ -117,12 +129,31 @@ public class MiNuongClan extends Boss {
         for (int i = 0; i < numPlayers; i++) {
             dropItem();
         }
-        if (plKill.clan != null && plKill.clan.BossOfTheGang != null) {
+        if (this.giaiCuuMiNuong != null) {
+            this.giaiCuuMiNuong.markBossDead();
+        }
+        if (plKill != null && plKill.clan != null && plKill.clan.BossOfTheGang != null) {
             plKill.clan.BossOfTheGang.BossDead = true;
         }
-        if (plKill.clan != null && plKill.clan.BossOfTheGang != null && plKill.clanMember != null) {
+        if (plKill != null && plKill.clan != null && plKill.clanMember != null
+                && (plKill.clan.BossOfTheGang != null || this.giaiCuuMiNuong != null)) {
             plKill.clan.rewardTopDamagers(plKill);
         }
+    }
+
+    private boolean canDamageInGiaiCuu(Player player) {
+        if (player == null || player.clan != this.clan || player.fusion == null
+                || player.fusion.typeFusion != ConstPlayer.NON_FUSION
+                || player.inventory == null || player.inventory.itemsBody == null
+                || player.inventory.itemsBody.size() <= 5) {
+            return false;
+        }
+        Item costume = player.inventory.itemsBody.get(5);
+        if (costume == null || !costume.isNotNullItem() || costume.template == null) {
+            return false;
+        }
+        int itemId = costume.template.id;
+        return itemId == 421 || itemId == 422 || itemId == 1885 || itemId == 1886;
     }
 
     private void dropCt(int x) {

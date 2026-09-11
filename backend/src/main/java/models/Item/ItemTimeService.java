@@ -10,6 +10,7 @@ import nro.services.Service;
 import Utils.Logger;
 import nro.map.BossOfTheGangs.BossOfTheGangs;
 import nro.map.DestronGas.DestronGas;
+import nro.map.GiaiCuuMiNuong.GiaiCuuMiNuong;
 import nro.map.RedRibbonHQ.RedRibbonHQ;
 import nro.map.SnakeWay.SnakeWay;
 import nro.map.TreasureUnderSea.TreasureUnderSea;
@@ -31,6 +32,7 @@ public class ItemTimeService {
         ItemTimeService.gI().sendTextDoanhTrai(player);
         ItemTimeService.gI().sendTextConDuongRanDoc(player);
         ItemTimeService.gI().sendTextKhiGasHuyDiet(player);
+        ItemTimeService.gI().sendTextGiaiCuuMiNuong(player);
         ItemTimeService.gI().sendTextTimePickDoanhTrai(player);
         if (player.fusion.typeFusion == ConstPlayer.LUONG_LONG_NHAT_THE) {
             sendItemTime(player, player.gender == ConstPlayer.NAMEC ? 3901 : 3790,
@@ -678,6 +680,19 @@ public class ItemTimeService {
         }
     }
 
+    public void sendTextGiaiCuuMiNuong(Player player) {
+        if (player.clan != null && player.clan.giaiCuuMiNuong != null
+                && player.clan.giaiCuuMiNuong.isOpened()
+                && player.clan.lastTimeOpenGiaiCuuMiNuong != 0) {
+            int secondPassed = (int) ((System.currentTimeMillis() - player.clan.lastTimeOpenGiaiCuuMiNuong) / 1000);
+            int secondsLeft = (GiaiCuuMiNuong.TIME_GIAI_CUU_MI_NUONG / 1000) - secondPassed;
+            if (secondsLeft < 0 || secondsLeft > 1800) {
+                return;
+            }
+            sendTextTime(player, GIAI_CUU_MI_NUONG, "Giải cứu Mị Nương:", secondsLeft);
+        }
+    }
+
     public void removeTextDoanhTrai(Player player) {
         removeTextTime(player, DOANH_TRAI);
     }
@@ -696,6 +711,10 @@ public class ItemTimeService {
     
     public void removeTextMapBossBangHoi(Player player) {
         removeTextTime(player, MAP_BOSS_BANG_HOI);
+    }
+
+    public void removeTextGiaiCuuMiNuong(Player player) {
+        removeTextTime(player, GIAI_CUU_MI_NUONG);
     }
     
     public void removeTextTime(Player player, byte id) {

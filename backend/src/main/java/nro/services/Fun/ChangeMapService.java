@@ -161,7 +161,8 @@ public class ChangeMapService {
                 Service.gI().sendThongBaoOK(pl, "Không thể đổi khu vực trong map này");
                 return;
             }
-            if (MapService.gI().isMapRiengTu(pl.zone.map.mapId)) {
+            if (MapService.gI().isMapRiengTu(pl.zone.map.mapId)
+                    || MapService.gI().isMapGiaiCuuMiNuong(pl.zone.map.mapId)) {
                 Service.gI().sendThongBaoOK(pl, "Không thể đổi khu vực trong map này");
                 return;
             }
@@ -240,7 +241,8 @@ public class ChangeMapService {
                 Service.gI().sendThongBaoOK(pl, "Không thể đổi khu vực trong map này");
                 return;
             }
-            if (MapService.gI().isMapRiengTu(pl.zone.map.mapId)) {
+            if (MapService.gI().isMapRiengTu(pl.zone.map.mapId)
+                    || MapService.gI().isMapGiaiCuuMiNuong(pl.zone.map.mapId)) {
                 Service.gI().sendThongBaoOK(pl, "Không thể đổi khu vực trong map này");
                 return;
             }
@@ -388,6 +390,13 @@ public class ChangeMapService {
             Service.gI().sendThongBao(player, "Không tìm thấy bản đồ!");
             return;
         }
+        if (MapService.gI().isMapGiaiCuuMiNuong(mapId)) {
+            Zone zoneJoin = MapService.gI().getMapCanJoin(player, mapId, zone);
+            if (zoneJoin != null) {
+                changeMap(player, zoneJoin, mapId, zone, x, y, NON_SPACE_SHIP);
+            }
+            return;
+        }
         if (zone == -1 || MapService.gI().isMapHungVuongEvent(mapId) || MapService.gI().isMapRiengTu(mapId)) {
             int minPlayers = Integer.MAX_VALUE;
             int selectedZone = -1;
@@ -425,6 +434,13 @@ public class ChangeMapService {
         Map map = MapService.gI().getMapById(mapId);
         if (map == null) {
             Service.gI().sendThongBao(player, "Không tìm thấy bản đồ!");
+            return;
+        }
+        if (MapService.gI().isMapGiaiCuuMiNuong(mapId)) {
+            Zone zoneJoin = MapService.gI().getMapCanJoin(player, mapId, zone);
+            if (zoneJoin != null) {
+                changeMap(player, zoneJoin, mapId, zone, x, y, NON_SPACE_SHIP);
+            }
             return;
         }
         if (zone == -1 || MapService.gI().isMapHungVuongEvent(mapId) || MapService.gI().isMapRiengTu(mapId)) {
@@ -484,6 +500,10 @@ public class ChangeMapService {
 
     //--------------------------------------------------------------------------
     private void changeMap(Player pl, Zone zoneJoin, int mapId, int zoneId, int x, int y, byte typeSpace) {
+        if (pl != null && !pl.isBoss && zoneJoin != null
+                && MapService.gI().isMapGiaiCuuMiNuong(zoneJoin.map.mapId)) {
+            zoneJoin = MapService.gI().getMapCanJoin(pl, zoneJoin.map.mapId, zoneJoin.zoneId);
+        }
         if (pl.idNRNM != -1 && !Util.canDoWithTime(pl.lastTimePickNRNM, 30000)) {
             resetPoint(pl);
             Service.gI().sendThongBao(pl, "Không thể chuyển map quá nhanh khi đeo Ngọc Rồng Namếc");
@@ -1103,6 +1123,9 @@ public class ChangeMapService {
     }
 
     public Zone getMapCanJoin(Player player, int mapId) {
+        if (MapService.gI().isMapGiaiCuuMiNuong(mapId)) {
+            return MapService.gI().getMapCanJoin(player, mapId, -1);
+        }
         if (MapService.gI().isMapOffline(player.zone.map.mapId) || MapService.gI().isMapBangHoi(player.zone.map.mapId)) {
             return getZoneJoinByMapIdAndZoneId(player, mapId, 0);
         }

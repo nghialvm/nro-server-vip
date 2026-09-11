@@ -30,6 +30,7 @@ import nro.skill.Skill;
 import nro.clan.ClanService;
 import nro.inventory.InventoryService;
 import QuanLiBoss.Manager.BossManager;
+import QuanLiBoss.Manager.HungVuongEventManager;
 import nro.server.Client;
 import nro.server.Maintenance;
 import nro.server.Manager;
@@ -69,6 +70,8 @@ import nro.effect.EffectMapService;
 import nro.inventory.Inventory;
 import nro.map.BossOfTheGangs.BossOfTheGangsService;
 import nro.map.DragonBallNamec.NgocRongNamec;
+import nro.map.GiaiCuuMiNuong.GiaiCuuMiNuong;
+import nro.map.GiaiCuuMiNuong.GiaiCuuMiNuongService;
 import nro.map.RedRibbonHQ.RedRibbonHQ;
 import nro.map.RedRibbonHQ.RedRibbonHQService;
 import nro.map.SuperDivineWater.SuperDivineWater;
@@ -159,11 +162,22 @@ public class NpcFactory {
         };
     }
 
+    private static Boss findLiveHungVuongBoss(int... bossIds) {
+        for (int bossId : bossIds) {
+            Boss boss = HungVuongEventManager.gI().getBossById(bossId);
+            if (boss != null && boss.zone != null && boss.zone.map != null && !boss.isDie()) {
+                return boss;
+            }
+        }
+        return null;
+    }
+
     public static Npc miNuong(int mapId, int status, int cx, int cy, int tempId, int avartar) {
         return new Npc(mapId, status, cx, cy, tempId, avartar) {
             @Override
             public void openBaseMenu(Player player) {
-                if (canOpenNpc(player)) {
+                if (player != null && player.zone != null && player.location != null
+                        && player.iDMark != null && canOpenNpc(player)) {
                     createOtherMenu(player, ConstNpc.MENU_JOIN_GIAI_CUU_MI_NUONG,
                            "Ta Đang Bị Kẻ Xấu Khống Chế\n"
                            + "Các Chàng Trai Hãy Mau Mau Lên Đường Giải Cứu Ta!",
@@ -173,33 +187,42 @@ public class NpcFactory {
 
             @Override
             public void confirmMenu(Player player, int select) {
+                if (player == null || player.zone == null || player.location == null
+                        || player.iDMark == null || !canOpenNpc(player)) {
+                    return;
+                }
                 int nPlSameClan = 0;
-                for (Player pl : player.zone.getPlayers()) {
-                    if (!pl.equals(player) && pl.clan != null && pl.clan.equals(player.clan) && pl.location.x >= 1120 && pl.location.x <= 1500) {
-                        nPlSameClan++;
+                if (player.zone != null) {
+                    for (Player pl : player.zone.getPlayers()) {
+                        if (pl != null && pl.location != null && !pl.equals(player)
+                                && pl.clan != null && pl.clan.equals(player.clan)
+                                && pl.location.x >= 1120 && pl.location.x <= 1500) {
+                            nPlSameClan++;
+                        }
                     }
                 }
-                if (canOpenNpc(player)) {
-                    switch (player.iDMark.getIndexMenu()) {
+                switch (player.iDMark.getIndexMenu()) {
                         case ConstNpc.MENU_JOIN_GIAI_CUU_MI_NUONG:
                             if (select == 0) {
                                 if (player.clan == null) {
                                     Service.gI().sendThongBao(player, "Yêu Cầu Có Bang Hội Mới Tham Gia Được");
                                     break;
                                 }
-                                if (player.clan.giaiCuuMiNuong != null) {
-                                    ChangeMapService.gI().changeMapInYard(player, 185, player.clan.giaiCuuMiNuong.id, 60);
+                                if (player.clan.giaiCuuMiNuong != null && player.clan.giaiCuuMiNuong.isOpened()) {
+                                    GiaiCuuMiNuongService.gI().openGiaiCuuMiNuong(player);
                                     break; 
-                                } else if (player.clan.getMembers().size() < GiaiCuuMiNuong.N_PLAYER_CLAN) {
+                                } else if (player.clan.getMembers() == null || player.clan.getMembers().size() < GiaiCuuMiNuong.N_PLAYER_CLAN) {
                                     Service.gI().sendThongBao(player, "Bang Hội Phải Có Đủ 3 Người Mới Được Tham Gia");
                                     break;
                                 } else if (nPlSameClan < GiaiCuuMiNuong.N_PLAYER_MAP) {
                                     Service.gI().sendThongBao(player, "Hãy Đứng Cùng 2 Người Trong Bang Để Tham Gia");
                                     break;
-                                } else if (player.clanMember.getNumDateFromJoinTimeToToday() < 1) {
+                                } else if (player.clanMember == null || player.clanMember.getNumDateFromJoinTimeToToday() < 1) {
                                     Service.gI().sendThongBao(player, "Yêu cầu tham gia bang hội trên 1 ngày");
                                     break;
-                                } else if (player.clan.haveGoneGiaiCuuMiNuong) {
+                                } else if (player.clan.haveGoneGiaiCuuMiNuong
+                                        && player.clan.lastTimeOpenGiaiCuuMiNuong != 0
+                                        && !Util.isAfterMidnight(player.clan.lastTimeOpenGiaiCuuMiNuong)) {
                                     Service.gI().sendThongBaoOK(player, "Bang Hội Của Anh Đã Tham Gia Hôm Nay Rồi\n"
                                            + "Hẹn Gặp Anh Vào Ngày Mai ♡");
                                     break;
@@ -211,21 +234,17 @@ public class NpcFactory {
                             } else if (select == 2) {
                                 NpcService.gI().createTutorial(player, this.avartar, ConstNpc.HUONG_DAN_GIAI_CUU_MI_NUONG2);
                             } else if (select == 3) {
-                                Boss ST = BossManager.gI().getBossById(BossID.SonTinh);
-                                Boss ST2 = BossManager.gI().getBossById(BossID.SonTinh2);
-                                if (BossManager.gI().getBossById(BossID.SonTinh) != null || BossManager.gI().getBossById(BossID.ThuyTinh) != null) {
-                                    this.npcChat(player, "Sơn Tinh Và Thuỷ Tinh Đang Ở Map: " + ST.zone.map.mapName);
-                                } else if (BossManager.gI().getBossById(BossID.SonTinh2) != null || BossManager.gI().getBossById(BossID.ThuyTinh2) != null) {
-                                    this.npcChat(player, "Sơn Tinh Và Thuỷ Tinh Đang Ở Map: " + ST2.zone.map.mapName);
-                                } else if (BossManager.gI().getBossById(BossID.SonTinh) == null || BossManager.gI().getBossById(BossID.ThuyTinh) == null) {
-                                    this.npcChat(player, "Boss Đã Chết");
-                                } else if (BossManager.gI().getBossById(BossID.SonTinh2) == null || BossManager.gI().getBossById(BossID.ThuyTinh2) == null) {
+                                Boss boss = findLiveHungVuongBoss(
+                                        BossID.SON_TINH, BossID.THUY_TINH,
+                                        BossID.SON_TINH_NEW, BossID.THUY_TINH_NEW);
+                                if (boss != null) {
+                                    this.npcChat(player, "Sơn Tinh Và Thuỷ Tinh Đang Ở Map: " + boss.zone.map.mapName);
+                                } else {
                                     this.npcChat(player, "Boss Đã Chết");
                                 }
                             }
                             break;
                     }
-                }
             }
         };
     }   

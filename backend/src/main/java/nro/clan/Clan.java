@@ -26,6 +26,7 @@ import models.Item.Item;
 import models.Item.ItemOption;
 import models.Item.ItemService;
 import nro.map.BossOfTheGangs.BossOfTheGangs;
+import nro.map.GiaiCuuMiNuong.GiaiCuuMiNuong;
 import nro.map.RedRibbonHQ.RedRibbonHQ;
 import nro.map.SnakeWay.SnakeWay;
 import nro.map.TreasureUnderSea.TreasureUnderSea;
@@ -98,6 +99,10 @@ public class Clan {
     
     public BossOfTheGangs BossOfTheGang;
     public long lastTimeOpenBossOfTheGangs;
+
+    public GiaiCuuMiNuong giaiCuuMiNuong;
+    public boolean haveGoneGiaiCuuMiNuong;
+    public long lastTimeOpenGiaiCuuMiNuong;
 
     public boolean isLeader;
     

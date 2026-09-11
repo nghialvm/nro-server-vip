@@ -306,6 +306,7 @@ public class ConstNpc {
     public static final int LOG_OUT_TRANH_NGOC = 801;
     //index menu linh canh
     public static final int MENU_JOIN_DOANH_TRAI = 502;
+    public static final int MENU_JOIN_GIAI_CUU_MI_NUONG = 503;
 
     //index menu con meo
     public static final int MAKE_MATCH_PVP = 502;

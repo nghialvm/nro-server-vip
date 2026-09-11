@@ -27,6 +27,8 @@ import nro.map.BossOfTheGangs.BossOfTheGangs;
 import nro.map.BossOfTheGangs.BossOfTheGangsService;
 import nro.map.DestronGas.DestronGas;
 import nro.map.DestronGas.DestronGasService;
+import nro.map.GiaiCuuMiNuong.GiaiCuuMiNuong;
+import nro.map.GiaiCuuMiNuong.GiaiCuuMiNuongService;
 import nro.map.MajinBuu14H.MajinBuu14H;
 import nro.map.MajinBuu14H.MajinBuu14HService;
 import nro.map.RedRibbonHQ.RedRibbonHQ;
@@ -112,7 +114,10 @@ public class Map implements Runnable {
     }
 
     private void initZone(int nZone, int maxPlayer) {
-        switch (this.type) {
+        if (MapService.gI().isMapGiaiCuuMiNuong(this.mapId)) {
+            nZone = GiaiCuuMiNuong.AVAILABLE;
+            maxPlayer = Math.max(maxPlayer, GiaiCuuMiNuong.N_PLAYER_CLAN);
+        } else switch (this.type) {
             case ConstMap.MAP_OFFLINE:
                 nZone = 1;
                 break;
@@ -148,7 +153,9 @@ public class Map implements Runnable {
         for (int i = 0; i < nZone; i++) {
             Zone zone = new Zone(this, i, maxPlayer);
             this.zones.add(zone);
-            switch (this.type) {
+            if (MapService.gI().isMapGiaiCuuMiNuong(this.mapId)) {
+                GiaiCuuMiNuongService.gI().addMapGiaiCuuMiNuong(i, zone);
+            } else switch (this.type) {
                 case ConstMap.MAP_BLACK_BALL_WAR:
                     BlackBallWarService.gI().addMapBlackBallWar(i, zone);
                     break;

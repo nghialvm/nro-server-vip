@@ -4,6 +4,7 @@ import consts.ConstMap;
 import nro.map.Map;
 import nro.map.WayPoint;
 import nro.map.Zone;
+import nro.map.GiaiCuuMiNuong.GiaiCuuMiNuong;
 import nro.mob.Mob;
 import nro.player.Player;
 import nro.server.Manager;
@@ -49,6 +50,28 @@ public class MapService {
     }
 
     public Zone getMapCanJoin(Player player, int mapId, int zoneId) {
+        if (this.isMapGiaiCuuMiNuong(mapId)) {
+            if (player == null || player.clan == null || player.clan.giaiCuuMiNuong == null
+                    || !player.clan.giaiCuuMiNuong.isOpened()) {
+                Zone zone = getZone(player == null ? 21 : 21 + player.gender);
+                if (player != null) {
+                    player.location.x = Util.nextInt(100, zone.map.mapWidth - 100);
+                    player.location.y = zone.map.yPhysicInTop(player.location.x, 100);
+                }
+                return zone;
+            }
+
+            GiaiCuuMiNuong event = player.clan.giaiCuuMiNuong;
+            Zone zone = event.getMapById(mapId);
+            if (zone == null || event.getClan() != player.clan) {
+                Zone safeZone = getZone(21 + player.gender);
+                player.location.x = Util.nextInt(100, safeZone.map.mapWidth - 100);
+                player.location.y = safeZone.map.yPhysicInTop(player.location.x, 100);
+                return safeZone;
+            }
+            return zone;
+        }
+
         if (isMapOffline(mapId) || isMapBangHoi(mapId)) {
             return getMapById(mapId).zones.get(0);
         }
@@ -455,7 +478,8 @@ public class MapService {
     
     public boolean isMapNotCanJoinPet(int mapId) {
         return MapService.gI().isMapOffline(mapId) || MapService.gI().isMapBangHoi(mapId) || MapService.gI().isMapPotaufeu(mapId) || MapService.gI().isMapWar(mapId)
-                || MapService.gI().isMapTestDame(mapId) || MapService.gI().isMapTranhNgocNamec(mapId) || MapService.gI().isMapHungVuongEvent(mapId) || isMapRiengTu(mapId);
+                || MapService.gI().isMapTestDame(mapId) || MapService.gI().isMapTranhNgocNamec(mapId) || MapService.gI().isMapHungVuongEvent(mapId)
+                || isMapGiaiCuuMiNuong(mapId) || isMapRiengTu(mapId);
     }
     
     public boolean shouldChangeMap(int currentMapId, int newMapId) {
@@ -465,7 +489,7 @@ public class MapService {
     }
     
     public boolean isMapNoNottify(int mapId) {
-        return isMapPhoBan(mapId) || isMapBlackBallWar(mapId) || isMapMaBu12H(mapId) || isMapMabu14H(mapId) || isMapLuyenTap(mapId) || isMapDongNamKarin(mapId) || isMapYardart(mapId) || isMapOffline(mapId) || isMapBangHoi(mapId) || isMapRiengTu(mapId);
+        return isMapPhoBan(mapId) || isMapBlackBallWar(mapId) || isMapMaBu12H(mapId) || isMapMabu14H(mapId) || isMapLuyenTap(mapId) || isMapDongNamKarin(mapId) || isMapYardart(mapId) || isMapOffline(mapId) || isMapBangHoi(mapId) || isMapGiaiCuuMiNuong(mapId) || isMapRiengTu(mapId);
     }
     
     public boolean isHome(int mapId) {
