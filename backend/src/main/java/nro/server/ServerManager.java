@@ -97,6 +97,7 @@ import nro.minigame.MiniGame;
 import nro.minigame.TaiXiu;
 import nro.pariry.pariryManager;
 import nro.services.Service;
+import nro.admin.AdminHttpServer;
 import java.nio.charset.StandardCharsets;
 
 public class ServerManager {
@@ -179,6 +180,10 @@ public class ServerManager {
     public void run() {
         isRunning = true;
 
+        // The web management API lives in the backend process so both the
+        // headless launcher and the Swing launcher share the same runtime.
+        AdminHttpServer.gI().start();
+
         Logger.title("SERVER ONLINE");
 
         gameExecutorService = Executors.newCachedThreadPool();
@@ -210,6 +215,7 @@ public class ServerManager {
 
         startCoreSystemThreads();
         startBossManagers();
+        AdminHttpServer.gI().applyStoredEvents();
         startEventBossManagers();
     }
 
@@ -617,6 +623,12 @@ public class ServerManager {
 
     public void close() {
         isRunning = false;
+
+        try {
+            AdminHttpServer.gI().stop();
+        } catch (Exception e) {
+            Logger.warn("ADMIN_API", "Không thể dừng Admin API: " + e.getMessage());
+        }
 
         Logger.title("SERVER CLOSE");
 

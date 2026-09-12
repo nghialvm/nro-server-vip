@@ -71,6 +71,27 @@ Chỉ chạy trên máy có giao diện đồ họa:
 java -jar management-ui/target/management-ui.jar
 ```
 
+## React management web
+
+The web console is in `management-web/`. It uses the Java Admin API on
+`127.0.0.1:18080`; the API never exposes database credentials to the browser.
+
+```bash
+cd management-web
+npm ci
+npm run dev
+```
+
+For production, run `npm run build`, serve `management-web/dist` through Nginx
+over HTTPS, and proxy `/api/` to the loopback Admin API. The sample Nginx
+configuration is `deploy/nginx/nro-management.conf`. Set
+`admin.cookie.secure=true` and `admin.api.cors=https://<your-admin-host>` in
+`data/config/data_base.properties`.
+
+The web console keeps compatibility with the legacy `account.password` value,
+but never returns it to the browser. Migrating that field to a modern password
+hash is a follow-up security task.
+
 ## Ubuntu systemd
 
 Copy `deploy/systemd/nro.service` vào `/etc/systemd/system/`, chỉnh `User` và đường dẫn nếu cần, sau đó:
