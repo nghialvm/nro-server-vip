@@ -40,6 +40,17 @@ public class AttributeManager {
         return null;
     }
 
+    public Attribute findById(int id) {
+        synchronized (attributes) {
+            for (Attribute at : attributes) {
+                if (at.getId() == id) {
+                    return at;
+                }
+            }
+        }
+        return null;
+    }
+
     public void update() {
         if (Util.canDoWithTime(lastUpdate, 1000)) {
             lastUpdate = System.currentTimeMillis();

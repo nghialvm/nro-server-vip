@@ -591,6 +591,7 @@ public class ServerManager {
                     if (attributeManager != null) {
                         attributeManager.update();
                         if (Util.canDoWithTime(lastUpdateAttribute, 600000)) {
+                            lastUpdateAttribute = System.currentTimeMillis();
                             Manager.gI().updateAttributeServer();
                         }
                     }

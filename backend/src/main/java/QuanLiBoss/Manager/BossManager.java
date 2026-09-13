@@ -27,7 +27,11 @@ import Utils.Logger;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import network.io.Message;
 
@@ -159,6 +163,7 @@ import nro.map.Zone;
 import nro.player.Player;
 import nro.server.Maintenance;
 import nro.services.MapService;
+import nro.services.Fun.ChangeMapService;
 
 public class BossManager implements Runnable {
 
@@ -166,6 +171,7 @@ public class BossManager implements Runnable {
     public static byte ratioReward = 10;
 
     protected final List<Boss> bosses;
+    private final Object runtimeLock = new Object();
 
     public static BossManager gI() {
         if (instance == null) {
@@ -179,15 +185,276 @@ public class BossManager implements Runnable {
     }
 
     public void addBoss(Boss boss) {
-        this.bosses.add(boss);
+        synchronized (runtimeLock) {
+            this.bosses.add(boss);
+        }
     }
 
     public void removeBoss(Boss boss) {
-        this.bosses.remove(boss);
+        synchronized (runtimeLock) {
+            this.bosses.remove(boss);
+        }
     }
 
     public List<Boss> getBosses() {
         return this.bosses;
+    }
+
+    /**
+     * Returns a stable view for readers that run outside the boss loop.
+     * The legacy getBosses() method is intentionally kept for game code that
+     * expects the original mutable list.
+     */
+    public List<Boss> snapshotBosses() {
+        synchronized (runtimeLock) {
+            return new ArrayList<>(this.bosses);
+        }
+    }
+
+    public record SpawnZone(int zoneId, int players, int bosses, boolean available, String status) {
+    }
+
+    public record SpawnMap(int mapId, String mapName, List<SpawnZone> zones) {
+    }
+
+    public record SpawnBoss(long bossId, String name, List<SpawnMap> maps,
+            int totalInstances, int aliveInstances, int restingInstances, int deadInstances) {
+    }
+
+    public static final class BossSpawnException extends RuntimeException {
+
+        public final int status;
+        public final String code;
+
+        public BossSpawnException(int status, String code, String message) {
+            super(message);
+            this.status = status;
+            this.code = code;
+        }
+
+        public BossSpawnException(int status, String code, String message, Throwable cause) {
+            super(message, cause);
+            this.status = status;
+            this.code = code;
+        }
+    }
+
+    /**
+     * Builds the catalog from the boss instances currently registered in the
+     * runtime. Maps that are configured but not loaded are deliberately
+     * omitted because they cannot be used by the admin action.
+     */
+    public List<SpawnBoss> getSpawnOptions() {
+        synchronized (runtimeLock) {
+            Map<Long, Boss> representatives = new LinkedHashMap<>();
+            Map<Long, int[]> counts = new LinkedHashMap<>();
+
+            for (Boss boss : this.bosses) {
+                if (boss == null || boss.data == null || boss.data.length == 0) {
+                    continue;
+                }
+                representatives.putIfAbsent(boss.id, boss);
+                int[] status = counts.computeIfAbsent(boss.id, ignored -> new int[4]);
+                status[0]++;
+                if (isLivingBoss(boss)) {
+                    status[1]++;
+                } else if (boss.zone == null) {
+                    status[2]++;
+                } else if (isDeadBoss(boss)) {
+                    status[3]++;
+                } else {
+                    status[2]++;
+                }
+            }
+
+            List<SpawnBoss> result = new ArrayList<>();
+            for (Map.Entry<Long, Boss> entry : representatives.entrySet()) {
+                Boss representative = entry.getValue();
+                Set<Integer> configuredMaps = configuredMapIds(representative);
+                List<SpawnMap> maps = new ArrayList<>();
+
+                for (Integer mapId : configuredMaps) {
+                    nro.map.Map map = MapService.gI().getMapById(mapId);
+                    if (map == null || map.zones == null || map.zones.isEmpty()) {
+                        continue;
+                    }
+
+                    List<SpawnZone> zones = new ArrayList<>();
+                    for (int zoneIndex = 0; zoneIndex < map.zones.size(); zoneIndex++) {
+                        Zone zone = map.zones.get(zoneIndex);
+                        if (zone == null) {
+                            continue;
+                        }
+                        int livingBosses = countLivingBosses(zone);
+                        boolean allowed = isSpawnZoneAllowed(representative, map.zones.size(), zoneIndex);
+                        boolean available = allowed && livingBosses == 0;
+                        String status = !allowed ? "RESTRICTED" : livingBosses > 0 ? "OCCUPIED" : "AVAILABLE";
+                        zones.add(new SpawnZone(zoneIndex, zone.getNumOfPlayers(), livingBosses, available, status));
+                    }
+                    if (!zones.isEmpty()) {
+                        maps.add(new SpawnMap(map.mapId,
+                                map.mapName == null ? "Map " + map.mapId : map.mapName,
+                                zones));
+                    }
+                }
+
+                int[] status = counts.get(entry.getKey());
+                String name = representative.data[0].getName();
+                result.add(new SpawnBoss(entry.getKey(), name == null ? "Boss " + entry.getKey() : name,
+                        maps, status[0], status[1], status[2], status[3]));
+            }
+            return result;
+        }
+    }
+
+    /**
+     * Creates a new boss and places it immediately in the requested runtime
+     * zone. The same lock is held by the boss loop, so validation and list/map
+     * insertion are one serialized operation.
+     */
+    public Boss spawnBossAt(int bossId, int mapId, int zoneId) {
+        synchronized (runtimeLock) {
+            Boss representative = findSpawnRepresentative(bossId);
+            if (representative == null) {
+                throw new BossSpawnException(404, "BOSS_NOT_FOUND", "Boss không tồn tại trong runtime");
+            }
+            if (!configuredMapIds(representative).contains(mapId)) {
+                throw new BossSpawnException(400, "BOSS_MAP_NOT_ALLOWED", "Map không thuộc cấu hình của boss");
+            }
+
+            nro.map.Map map = MapService.gI().getMapById(mapId);
+            if (map == null || map.zones == null || map.zones.isEmpty()) {
+                throw new BossSpawnException(404, "MAP_NOT_LOADED", "Map chưa được load trong runtime");
+            }
+            Zone targetZone = map.getZoneByIndex(zoneId);
+            if (targetZone == null) {
+                throw new BossSpawnException(400, "BOSS_ZONE_NOT_FOUND", "Khu không tồn tại trong map");
+            }
+            if (!isSpawnZoneAllowed(representative, map.zones.size(), zoneId)) {
+                throw new BossSpawnException(400, "BOSS_ZONE_NOT_ALLOWED", "Khu không nằm trong giới hạn spawn của boss");
+            }
+            if (countLivingBosses(targetZone) > 0) {
+                throw new BossSpawnException(409, "BOSS_ZONE_OCCUPIED", "Khu đã có boss đang sống");
+            }
+
+            List<Boss> existingBosses = new ArrayList<>(this.bosses);
+            Boss boss = createBoss(bossId);
+            if (boss == null) {
+                cleanupCreatedBosses(existingBosses);
+                throw new BossSpawnException(400, "BOSS_FACTORY_NOT_FOUND", "Boss không có factory hỗ trợ");
+            }
+
+            boss.zoneFinal = targetZone;
+            try {
+                boss.currentLevel = -1;
+                boss.respawn();
+                boss.joinMap();
+                if (boss.zone != targetZone || !targetZone.getBosses().contains(boss) || !isLivingBoss(boss)) {
+                    throw new BossSpawnException(500, "BOSS_SPAWN_FAILED", "Không thể đưa boss vào đúng map/khu");
+                }
+                return boss;
+            } catch (BossSpawnException exception) {
+                cleanupCreatedBosses(existingBosses);
+                throw exception;
+            } catch (Exception exception) {
+                cleanupCreatedBosses(existingBosses);
+                throw new BossSpawnException(500, "BOSS_SPAWN_FAILED", "Không thể spawn boss trong runtime", exception);
+            }
+        }
+    }
+
+    public static boolean isSpawnZoneAllowed(int zoneId, int zoneCount,
+            boolean isZoneRandomSpawn, boolean isZone02Spawn) {
+        if (zoneId < 0 || zoneId >= zoneCount) {
+            return false;
+        }
+        if (isZone02Spawn) {
+            return zoneId >= 2;
+        }
+        if (zoneCount <= 1) {
+            return true;
+        }
+        // The normal boss lifecycle starts at zone 1 when a map has multiple
+        // zones. Random-spawn bosses use the same lower bound.
+        return zoneId >= 1;
+    }
+
+    private static boolean isSpawnZoneAllowed(Boss boss, int zoneCount, int zoneId) {
+        if (boss != null && boss.isSpawnPlayer) {
+            return zoneId >= 0 && zoneId < zoneCount;
+        }
+        return isSpawnZoneAllowed(zoneId, zoneCount, boss != null && boss.isZoneRandomSpawn,
+                boss != null && boss.isZone02Spawn);
+    }
+
+    private Boss findSpawnRepresentative(int bossId) {
+        for (Boss boss : this.bosses) {
+            if (boss != null && boss.id == bossId && boss.data != null && boss.data.length > 0) {
+                return boss;
+            }
+        }
+        return null;
+    }
+
+    private static Set<Integer> configuredMapIds(Boss boss) {
+        Set<Integer> mapIds = new LinkedHashSet<>();
+        if (boss != null && boss.data != null && boss.data.length > 0 && boss.data[0].getMapJoin() != null) {
+            for (int mapId : boss.data[0].getMapJoin()) {
+                mapIds.add(mapId);
+            }
+        }
+        return mapIds;
+    }
+
+    private static int countLivingBosses(Zone zone) {
+        int count = 0;
+        if (zone == null || zone.getBosses() == null) {
+            return count;
+        }
+        for (Player player : zone.getBosses()) {
+            if (player instanceof Boss boss && isLivingBoss(boss)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static boolean isLivingBoss(Boss boss) {
+        try {
+            return boss != null && boss.zone != null && !boss.isDie();
+        } catch (RuntimeException exception) {
+            return false;
+        }
+    }
+
+    private static boolean isDeadBoss(Boss boss) {
+        try {
+            return boss != null && boss.isDie();
+        } catch (RuntimeException exception) {
+            return false;
+        }
+    }
+
+    private void cleanupCreatedBosses(List<Boss> existingBosses) {
+        List<Boss> created = new ArrayList<>();
+        for (Boss boss : this.bosses) {
+            if (!existingBosses.contains(boss)) {
+                created.add(boss);
+            }
+        }
+        for (Boss boss : created) {
+            try {
+                if (boss.zone != null) {
+                    ChangeMapService.gI().exitMap(boss);
+                }
+            } catch (Exception ignored) {
+            }
+            this.bosses.remove(boss);
+            try {
+                boss.dispose();
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     public void loadBoss() {
@@ -940,35 +1207,39 @@ public class BossManager implements Runnable {
     }
 
     public void resetAllBosses() {
-        try {
-            for (Boss boss : this.bosses) {
-                if (boss != null && boss.zone != null) {
-                    boss.leaveMap();
-                    boss.setDieLV(boss);
+        synchronized (runtimeLock) {
+            try {
+                for (Boss boss : this.bosses) {
+                    if (boss != null && boss.zone != null) {
+                        boss.leaveMap();
+                        boss.setDieLV(boss);
+                    }
                 }
-            }
 
-            this.bosses.clear();
-            this.loadBoss();
-            System.out.println("[BossManager] Đã reset toàn bộ boss.");
-        } catch (Exception e) {
-            System.err.println("[BossManager] Lỗi khi reset boss: " + e.getMessage());
+                this.bosses.clear();
+                this.loadBoss();
+                System.out.println("[BossManager] Đã reset toàn bộ boss.");
+            } catch (Exception e) {
+                System.err.println("[BossManager] Lỗi khi reset boss: " + e.getMessage());
+            }
         }
     }
 
     public int respawnAllRestingBosses() {
-        int count = 0;
-        for (Boss boss : bosses) {
-            if (boss != null && (boss.isDie() || boss.zone == null)) {
-                try {
-                    boss.active();
-                    count++;
-                } catch (Exception e) {
-                    System.err.println("Lỗi hồi sinh boss " + boss.name + ": " + e.getMessage());
+        synchronized (runtimeLock) {
+            int count = 0;
+            for (Boss boss : bosses) {
+                if (boss != null && (boss.isDie() || boss.zone == null)) {
+                    try {
+                        boss.changeStatus(BossStatus.RESPAWN);
+                        count++;
+                    } catch (Exception e) {
+                        System.err.println("Lỗi hồi sinh boss " + boss.name + ": " + e.getMessage());
+                    }
                 }
             }
+            return count;
         }
-        return count;
     }
 
     public int[] getBossStatusCounts() {
@@ -976,7 +1247,7 @@ public class BossManager implements Runnable {
         int dead = 0;
         int resting = 0;
 
-        for (Boss boss : bosses) {
+        for (Boss boss : snapshotBosses()) {
             if (boss == null) {
                 continue;
             }
@@ -1000,14 +1271,16 @@ public class BossManager implements Runnable {
                 int delay = 150;
                 long st = System.currentTimeMillis();
 
-                for (int i = this.bosses.size() - 1; i >= 0; i--) {
-                    try {
-                        Boss boss = this.bosses.get(i);
-                        if (boss != null) {
-                            boss.update();
+                synchronized (runtimeLock) {
+                    for (int i = this.bosses.size() - 1; i >= 0; i--) {
+                        try {
+                            Boss boss = this.bosses.get(i);
+                            if (boss != null) {
+                                boss.update();
+                            }
+                        } catch (Exception e) {
+                            Logger.logException(BossManager.class, e);
                         }
-                    } catch (Exception e) {
-                        Logger.logException(BossManager.class, e);
                     }
                 }
 

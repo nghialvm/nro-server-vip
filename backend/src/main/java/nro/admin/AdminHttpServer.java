@@ -2,6 +2,7 @@ package nro.admin;
 
 import QuanLiBoss.BossData;
 import QuanLiBoss.BossesData;
+import QuanLiBoss.Boss;
 import QuanLiBoss.Manager.BossManager;
 import Utils.Logger;
 import com.google.gson.Gson;
@@ -19,7 +20,11 @@ import com.sun.net.httpserver.HttpServer;
 import event.EventManager;
 import jbcd.ConnectDB;
 import network.session.SessionManager;
+import nro.attribute.Attribute;
+import nro.attribute.AttributeManager;
 import nro.giftcode.GiftCodeManager;
+import nro.power.PowerLimit;
+import nro.power.PowerLimitManager;
 import nro.server.Client;
 import nro.server.DropManager;
 import nro.server.Maintenance;
@@ -267,6 +272,8 @@ public final class AdminHttpServer {
                     handleEvents(exchange, path, session);
                 } else if (path.startsWith("/boss-config")) {
                     handleBossConfig(exchange, path, session);
+                } else if ("/bosses/spawn-options".equals(path)) {
+                    handleBossSpawnOptions(exchange);
                 } else if ("/bosses/actions".equals(path)) {
                     handleBossAction(exchange, session);
                 } else if (path.startsWith("/security")) {
@@ -1764,6 +1771,10 @@ public final class AdminHttpServer {
 
     private void handleServer(HttpExchange exchange, String path, AdminSession session) throws Exception {
         String method = exchange.getRequestMethod().toUpperCase(Locale.ROOT);
+        if (path.equals("/server/attribute-server") || path.startsWith("/server/attribute-server/")) {
+            handleAttributeServer(exchange, path, session);
+            return;
+        }
         if ("/server/reload".equals(path)) {
             requireMethod(exchange, "POST");
             JsonObject body = readJsonObject(exchange);
@@ -1873,6 +1884,73 @@ public final class AdminHttpServer {
             return;
         }
         throw ApiException.notFound("SERVER_ROUTE_NOT_FOUND", "Không tìm thấy thao tác server");
+    }
+
+    private void handleAttributeServer(HttpExchange exchange, String path, AdminSession session) throws Exception {
+        String method = exchange.getRequestMethod().toUpperCase(Locale.ROOT);
+        List<String> parts = segments(path);
+        if (parts.size() == 2 && "GET".equals(method)) {
+            respondSuccess(exchange, 200, attributeServerSnapshot(), null);
+            return;
+        }
+        if (parts.size() == 3 && "PUT".equals(method)) {
+            int attributeId = pathInt(parts.get(2), "attributeId");
+            JsonObject body = readJsonObject(exchange);
+            validateAllowedFields(body, Set.of("value", "time"), "attribute_server");
+            int value = requiredJsonInt(body, "value", 0, 100_000);
+            int time = requiredJsonInt(body, "time", -1, Integer.MAX_VALUE);
+            Attribute updated = Manager.gI().updateAttributeServer(attributeId, value, time);
+            if (updated == null) {
+                throw ApiException.notFound("ATTRIBUTE_NOT_FOUND", "Không tìm thấy attribute_server " + attributeId);
+            }
+            audit(session, "UPDATE", "server.attribute-server", String.valueOf(attributeId), body);
+            respondSuccess(exchange, 200, attributeServerRow(updated), null);
+            return;
+        }
+        throw ApiException.methodNotAllowed("METHOD_NOT_ALLOWED", "Thao tác attribute_server không được hỗ trợ");
+    }
+
+    private JsonObject attributeServerSnapshot() {
+        AttributeManager attributeManager = ServerManager.gI().getAttributeManager();
+        if (attributeManager == null) {
+            throw new ApiException(503, "ATTRIBUTE_SERVER_UNAVAILABLE", "Attribute server chưa được khởi tạo");
+        }
+        List<Attribute> attributes = attributeManager.getAttributes();
+        List<Attribute> sorted = new ArrayList<>();
+        synchronized (attributes) {
+            sorted.addAll(attributes);
+        }
+        sorted.sort(Comparator.comparingInt(Attribute::getId));
+
+        JsonArray rows = new JsonArray();
+        for (Attribute attribute : sorted) {
+            rows.add(attributeServerRow(attribute));
+        }
+        return objectOf("attributes", rows, "powerLimit", configuredPowerLimit());
+    }
+
+    private JsonObject attributeServerRow(Attribute attribute) {
+        JsonObject row = new JsonObject();
+        row.addProperty("id", attribute.getId());
+        row.addProperty("templateId", attribute.getTemplate().getId());
+        row.addProperty("templateName", attribute.getTemplate().getName());
+        row.addProperty("value", attribute.getValue());
+        row.addProperty("time", attribute.getTime());
+        row.addProperty("active", !attribute.isExpired());
+        return row;
+    }
+
+    private long configuredPowerLimit() {
+        long maximum = 0;
+        List<PowerLimit> powers = PowerLimitManager.getInstance().getPowers();
+        if (powers != null) {
+            for (PowerLimit power : powers) {
+                if (power != null && power.getPower() > maximum) {
+                    maximum = power.getPower();
+                }
+            }
+        }
+        return maximum;
     }
 
     private void handlePlayerAction(HttpExchange exchange, String path, AdminSession session) throws Exception {
@@ -2163,6 +2241,48 @@ public final class AdminHttpServer {
         return row;
     }
 
+    private void handleBossSpawnOptions(HttpExchange exchange) throws Exception {
+        requireMethod(exchange, "GET");
+        JsonArray bosses = new JsonArray();
+        for (BossManager.SpawnBoss spawnBoss : BossManager.gI().getSpawnOptions()) {
+            JsonObject boss = new JsonObject();
+            boss.addProperty("bossId", spawnBoss.bossId());
+            boss.addProperty("name", spawnBoss.name());
+
+            JsonObject instances = new JsonObject();
+            instances.addProperty("total", spawnBoss.totalInstances());
+            instances.addProperty("alive", spawnBoss.aliveInstances());
+            instances.addProperty("resting", spawnBoss.restingInstances());
+            instances.addProperty("dead", spawnBoss.deadInstances());
+            boss.add("instances", instances);
+
+            JsonArray maps = new JsonArray();
+            for (BossManager.SpawnMap spawnMap : spawnBoss.maps()) {
+                JsonObject map = new JsonObject();
+                map.addProperty("mapId", spawnMap.mapId());
+                map.addProperty("mapName", spawnMap.mapName());
+                JsonArray zones = new JsonArray();
+                for (BossManager.SpawnZone spawnZone : spawnMap.zones()) {
+                    JsonObject zone = new JsonObject();
+                    zone.addProperty("zoneId", spawnZone.zoneId());
+                    zone.addProperty("players", spawnZone.players());
+                    zone.addProperty("bosses", spawnZone.bosses());
+                    zone.addProperty("available", spawnZone.available());
+                    zone.addProperty("status", spawnZone.status());
+                    zones.add(zone);
+                }
+                map.add("zones", zones);
+                maps.add(map);
+            }
+            boss.add("maps", maps);
+            bosses.add(boss);
+        }
+
+        JsonObject result = new JsonObject();
+        result.add("bosses", bosses);
+        respondSuccess(exchange, 200, result, null);
+    }
+
     private void handleBossAction(HttpExchange exchange, AdminSession session) throws Exception {
         requireMethod(exchange, "POST");
         JsonObject body = readJsonObject(exchange);
@@ -2175,9 +2295,33 @@ public final class AdminHttpServer {
             }
             case "respawnresting" -> result.addProperty("count", BossManager.gI().respawnAllRestingBosses());
             case "summon" -> {
+                validateAllowedFields(body, Set.of("action", "bossId", "mapId", "zoneId"), "boss summon");
                 int bossId = requiredInt(body, "bossId", -2_000_000_000, 2_000_000_000);
+                boolean hasMap = body.has("mapId");
+                boolean hasZone = body.has("zoneId");
+                if (hasMap != hasZone) {
+                    throw ApiException.badRequest("MAP_ZONE_REQUIRED", "Phải truyền đồng thời mapId và zoneId");
+                }
                 result.addProperty("bossId", bossId);
-                result.addProperty("created", BossManager.gI().createBoss(bossId) != null);
+                if (hasMap) {
+                    int mapId = requiredInt(body, "mapId", -2_000_000_000, 2_000_000_000);
+                    int zoneId = requiredInt(body, "zoneId", 0, 2_000_000_000);
+                    try {
+                        Boss boss = BossManager.gI().spawnBossAt(bossId, mapId, zoneId);
+                        result.addProperty("created", true);
+                        result.addProperty("name", boss.name);
+                        result.addProperty("mapId", boss.zone.map.mapId);
+                        result.addProperty("zoneId", boss.zone.zoneId);
+                        result.addProperty("status", boss.bossStatus.name());
+                    } catch (BossManager.BossSpawnException exception) {
+                        throw new ApiException(exception.status, exception.code, exception.getMessage());
+                    }
+                } else {
+                    // Compatibility path for existing admin clients. A
+                    // coordinate-free summon keeps the original auto-spawn
+                    // behaviour.
+                    result.addProperty("created", BossManager.gI().createBoss(bossId) != null);
+                }
             }
             default -> throw ApiException.badRequest("INVALID_BOSS_ACTION", "Boss action không hợp lệ");
         }

@@ -2573,7 +2573,7 @@ if (hasFull5NhatAn()) {
         }
 
         // Attribute server
-        if (this.player.isPl()) {
+        if (receivesServerTnsm(this.player)) {
             Attribute at = ServerManager.gI().getAttributeManager().find(ConstAttribute.TNSM);
             if (at != null && !at.isExpired()) {
                 tiemNang += calPercent(tiemNang, at.getValue());
@@ -2842,6 +2842,10 @@ private boolean hasFull5NguyetAn() {
 private boolean hasFull5NhatAn() {
     return this.setNhatAn >= 5;
 }
+
+    static boolean receivesServerTnsm(Player player) {
+        return player != null && (player.isPl() || player.isDeTu);
+    }
 
 // Giảm exp theo mốc + giới hạn 20tr
     public long calSubTNSM(long tiemNang) {

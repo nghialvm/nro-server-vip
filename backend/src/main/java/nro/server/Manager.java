@@ -1345,30 +1345,64 @@ public final class Manager {
     }
 
     public void updateAttributeServer() {
-        PreparedStatement ps;
-        try (Connection con = ConnectDB.getConnection();) {
-            AttributeManager am = ServerManager.gI().getAttributeManager();
-            List<Attribute> attributes = am.getAttributes();
-            ps = con.prepareStatement("UPDATE attribute_server SET attribute_template_id = ?, value = ?, time = ? WHERE id = ?");
-            synchronized (attributes) {
+        AttributeManager am = ServerManager.gI().getAttributeManager();
+        if (am == null) {
+            return;
+        }
+        List<Attribute> attributes = am.getAttributes();
+        synchronized (attributes) {
+            try (Connection con = ConnectDB.getConnection();
+                 PreparedStatement ps = con.prepareStatement(
+                         "UPDATE attribute_server SET attribute_template_id = ?, value = ?, time = ? WHERE id = ?")) {
+                List<Attribute> persisted = new ArrayList<>();
                 for (Attribute at : attributes) {
-                    try {
-                        if (at.isChanged()) {
-                            ps.setInt(1, at.getTemplate().getId());
-                            ps.setInt(2, at.getValue());
-                            ps.setInt(3, at.getTime());
-                            ps.setInt(4, at.getId());
-                            ps.addBatch();
-                        }
-                    } catch (SQLException e) {
+                    if (!at.isChanged()) {
+                        continue;
                     }
+                    ps.setInt(1, at.getTemplate().getId());
+                    ps.setInt(2, at.getValue());
+                    ps.setInt(3, at.getTime());
+                    ps.setInt(4, at.getId());
+                    ps.addBatch();
+                    persisted.add(at);
+                }
+                ps.executeBatch();
+                for (Attribute at : persisted) {
+                    at.clearChanged();
+                }
+            } catch (SQLException ex) {
+                java.util.logging.Logger.getLogger(Manager.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public Attribute updateAttributeServer(int id, int value, int time) throws SQLException {
+        AttributeManager am = ServerManager.gI().getAttributeManager();
+        if (am == null) {
+            throw new SQLException("Attribute server chưa được khởi tạo");
+        }
+        List<Attribute> attributes = am.getAttributes();
+        synchronized (attributes) {
+            Attribute attribute = am.findById(id);
+            if (attribute == null) {
+                return null;
+            }
+            try (Connection con = ConnectDB.getConnection();
+                 PreparedStatement ps = con.prepareStatement(
+                         "UPDATE attribute_server SET attribute_template_id = ?, value = ?, time = ? WHERE id = ?")) {
+                ps.setInt(1, attribute.getTemplate().getId());
+                ps.setInt(2, value);
+                ps.setInt(3, time);
+                ps.setInt(4, id);
+                if (ps.executeUpdate() != 1) {
+                    throw new SQLException("Không tìm thấy dòng attribute_server " + id);
                 }
             }
-            ps.executeBatch();
-            ps.close();
-        } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(Manager.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            attribute.setValue(value);
+            attribute.setTime(time);
+            attribute.clearChanged();
+            return attribute;
         }
     }
     

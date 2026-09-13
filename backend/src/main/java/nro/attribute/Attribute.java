@@ -35,6 +35,10 @@ public class Attribute {
         changed = true;
     }
 
+    public void clearChanged() {
+        changed = false;
+    }
+
     public boolean isExpired() {
         return time == 0;
     }
