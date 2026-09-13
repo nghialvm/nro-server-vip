@@ -2710,8 +2710,11 @@ public final class AdminHttpServer {
             if ("version".equals(column)) {
                 continue;
             }
-            if (!definition.writable.contains(column)) {
+            if (!definition.columns.contains(column)) {
                 throw ApiException.badRequest("FIELD_NOT_ALLOWED", "Trường không được phép: " + column);
+            }
+            if (!definition.writable.contains(column)) {
+                continue;
             }
             if (looksLikeJsonColumn(column) && entry.getValue().isJsonPrimitive()
                     && entry.getValue().getAsJsonPrimitive().isString()) {
@@ -2745,7 +2748,9 @@ public final class AdminHttpServer {
             }
         }
         for (String column : body.keySet()) {
-            if (!"version".equals(column) && !definition.writable.contains(column)) {
+            if (!"version".equals(column)
+                    && !definition.writable.contains(column)
+                    && !definition.columns.contains(column)) {
                 throw ApiException.badRequest("FIELD_NOT_ALLOWED", "Trường không được phép: " + column);
             }
         }
