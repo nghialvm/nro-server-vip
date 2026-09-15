@@ -1156,21 +1156,18 @@ public final class Manager {
         if ((value = properties.get("server.port")) != null) {
             ServerManager.PORT = Integer.parseInt(String.valueOf(value));
         }
-        String linkServer = "";
         if ((value = properties.get("server.ip")) != null) {
             ServerManager.IP = String.valueOf(value);
-            linkServer += ServerManager.NAME + ":" + ServerManager.IP + ":" + ServerManager.PORT + ":0,";
         }
+        List<String> configuredServerLinks = new ArrayList<>();
         for (int j = 1; j <= 10; j++) {
             value = properties.get("server.sv" + j);
             if (value != null) {
-                String serverEntry = normalizeServerLinkEntry(String.valueOf(value));
-                if (!serverEntry.isEmpty()) {
-                    linkServer += serverEntry + ",";
-                }
+                configuredServerLinks.add(String.valueOf(value));
             }
         }
-        DataGame.LINK_IP_PORT = linkServer.substring(0, linkServer.length() - 1);
+        DataGame.LINK_IP_PORT = buildServerLinkList(
+                ServerManager.NAME, ServerManager.IP, ServerManager.PORT, configuredServerLinks);
         if ((value = properties.get("server.waitlogin")) != null) {
             SECOND_WAIT_LOGIN = Byte.parseByte(String.valueOf(value));
         }
@@ -1195,6 +1192,30 @@ public final class Manager {
         if ((value = properties.get("server.daoautoupdater")) != null) {
             DAO_AUTO_UPDATER = String.valueOf(value).equalsIgnoreCase("true");
         }
+    }
+
+    /**
+     * Builds the server list sent to the client. Explicit server.svN entries
+     * are authoritative. The current server is only used as a fallback for
+     * older configurations that do not define any server.svN entry.
+     */
+    static String buildServerLinkList(String serverName, String serverIp, int serverPort,
+            List<String> rawEntries) {
+        List<String> serverLinks = new ArrayList<>();
+        if (rawEntries != null) {
+            for (String rawEntry : rawEntries) {
+                String serverEntry = normalizeServerLinkEntry(rawEntry);
+                if (!serverEntry.isEmpty()) {
+                    serverLinks.add(serverEntry);
+                }
+            }
+        }
+        if (serverLinks.isEmpty() && serverIp != null && !serverIp.trim().isEmpty()) {
+            String fallbackName = serverName == null || serverName.trim().isEmpty()
+                    ? "LOCAL" : serverName.trim();
+            serverLinks.add(fallbackName + ":" + serverIp.trim() + ":" + serverPort + ":0");
+        }
+        return String.join(",", serverLinks);
     }
 
     /**

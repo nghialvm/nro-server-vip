@@ -2061,6 +2061,11 @@ public class Service {
     public void switchToCreateChar(MySession session) {
         Message msg;
         try {
+            // A session without a player does not pass through MySession.login's
+            // normal player initialization, where the small-image version
+            // table is sent.  The character preview still needs that table for
+            // body/leg sprites that are stored outside the Big*.png sheets.
+            DataGame.sendSmallVersion(session);
             msg = new Message(2);
             session.sendMessage(msg);
             msg.cleanup();
