@@ -99,7 +99,7 @@ public class GodGK {
                 long createTime = rs.getTimestamp("accountCreatedTimes").getTime();
                 int deltaTime = (int) ((System.currentTimeMillis() - createTime) / 1000);
                 session.timeCreateAcount = rs.getTimestamp("accountCreatedTimes").getTime();
-                if (!session.isFounder) {
+                if (baotri && !session.isFounder) {
                     Service.gI().sendThongBaoOK(session, "Game đang bảo trì");
                     Service.gI().sendLoginFail(session, false); 
                     return null; 

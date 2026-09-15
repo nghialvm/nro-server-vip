@@ -43,6 +43,7 @@ import consts.ConstAchievement;
 import consts.ConstDailyGift;
 import consts.ConstTranhNgocNamek;
 import jbcd.ConnectDB;
+import jbcd.data.GodGK;
 import network.interfaces.IMessageHandler;
 import network.interfaces.ISession;
 import nro.skill.Skill;
@@ -376,7 +377,7 @@ public class Controller implements IMessageHandler {
                     }
                     break;
                 case -101:
-//                    login2(_session, _msg);
+                    NewGame(_session, _msg);
                     break;
                 case -103:
                     if (player != null) {
@@ -1000,9 +1001,70 @@ public class Controller implements IMessageHandler {
     }
 
     public void NewGame(MySession session, Message msg) {
-        Service.gI().switchToRegisterScr(session);
-//        Service.gI().sendThongBaoOK(session, "Muốn chơi thì ib đại ka MaiTienDung\n"
-//                + "Zalo: 0974764064");
+        synchronized (session) {
+            try {
+                msg.reader().readUTF();
+                byte mode = msg.reader().readByte();
+                if (msg.reader().available() != 0 || mode != 1) {
+                    Service.gI().sendThongBaoOK(session, "Yêu cầu chơi mới không hợp lệ");
+                    Logger.eventInfo("Rejected malformed guest-login packet");
+                    return;
+                }
+
+                if (session.player != null) {
+                    Service.gI().sendThongBaoOK(session, "Phiên đăng nhập này đã vào game rồi");
+                    return;
+                }
+                if (Manager.LOCAL) {
+                    Service.gI().sendThongBaoOK(session,
+                            "Server này chỉ để lưu dữ liệu\nVui lòng qua server khác");
+                    return;
+                }
+                if (Maintenance.isRunning || Boolean.TRUE.equals(GodGK.baotri)) {
+                    Service.gI().sendThongBaoOK(session,
+                            "Server đang trong thời gian bảo trì, vui lòng quay lại sau");
+                    return;
+                }
+                if (!session.isFounder && Client.gI().getPlayers().size() >= Manager.MAX_PLAYER) {
+                    Service.gI().sendThongBaoOK(session,
+                            "Máy chủ hiện đang quá tải, cư dân vui lòng di chuyển sang máy chủ khác.");
+                    return;
+                }
+
+                // The first field is part of the wire contract, but is never
+                // trusted or persisted. Reuse a username if this packet is
+                // retransmitted on the same session.
+                String username = session.guestAccountUsername;
+                if (username == null || username.isEmpty()) {
+                    username = Service.gI().createGuestAccount();
+                    session.guestAccountUsername = username;
+                    Logger.eventInfo("Created guest account: " + username);
+                }
+
+                Message response = createGuestAccountResponse(username);
+                try {
+                    session.sendMessage(response);
+                } finally {
+                    response.cleanup();
+                }
+            } catch (IOException e) {
+                Service.gI().sendThongBaoOK(session, "Dữ liệu chơi mới không hợp lệ");
+                Logger.eventInfo("Rejected truncated guest-login packet");
+            } catch (Exception e) {
+                Service.gI().sendThongBaoOK(session,
+                        "Không thể tạo tài khoản chơi mới, vui lòng thử lại sau");
+                Logger.logException(Controller.class, e);
+            }
+        }
+    }
+
+    static Message createGuestAccountResponse(String username) throws IOException {
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Guest username must not be empty");
+        }
+        Message response = new Message(-101);
+        response.writer().writeUTF(username);
+        return response;
     }
 
     public void sendInfo(MySession session) {

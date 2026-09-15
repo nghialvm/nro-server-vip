@@ -31,7 +31,7 @@ public class DataGame {
     public static byte vsItem = 5;
     public static int vsRes = 4;
 
-    public static String LINK_IP_PORT = "LOCAL:127.0.0.1:14445:0,0,0";
+    public static String LINK_IP_PORT = "LOCAL:127.0.0.1:14445:0";
     
     public static Map MAP_MOUNT_NUM = new HashMap();
 
@@ -475,17 +475,26 @@ public static File getIconFile(int iconId, int zoomLevel) {
 }
 
     
+    static Message createLinkIPMessage() throws IOException {
+        Message msg = new Message(-29);
+        msg.writer().writeByte(2);
+        msg.writer().writeUTF(LINK_IP_PORT + ",0,0");
+        msg.writer().writeByte(1);
+        msg.writer().writeByte(0);
+        return msg;
+    }
+
     public static void sendLinkIP(MySession session) {
-        Message msg;
+        Message msg = null;
         try {
-            msg = new Message(-29);
-            msg.writer().writeByte(2);
-            msg.writer().writeUTF(LINK_IP_PORT + ",0,0");
-            msg.writer().writeByte(1);
+            msg = createLinkIPMessage();
             session.sendMessage(msg);
-            msg.cleanup();
         } catch (Exception e) {
             Logger.logException(DataGame.class, e);
+        } finally {
+            if (msg != null) {
+                msg.cleanup();
+            }
         }
     }
 }

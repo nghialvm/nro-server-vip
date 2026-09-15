@@ -1164,7 +1164,10 @@ public final class Manager {
         for (int j = 1; j <= 10; j++) {
             value = properties.get("server.sv" + j);
             if (value != null) {
-                linkServer += String.valueOf(value) + ":0,";
+                String serverEntry = normalizeServerLinkEntry(String.valueOf(value));
+                if (!serverEntry.isEmpty()) {
+                    linkServer += serverEntry + ",";
+                }
             }
         }
         DataGame.LINK_IP_PORT = linkServer.substring(0, linkServer.length() - 1);
@@ -1375,6 +1378,25 @@ public final class Manager {
                         .getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    static String normalizeServerLinkEntry(String rawEntry) {
+        if (rawEntry == null) {
+            return "";
+        }
+        String entry = rawEntry.trim();
+        int suffixStart = entry.indexOf(',');
+        if (suffixStart >= 0) {
+            entry = entry.substring(0, suffixStart).trim();
+        }
+        if (entry.isEmpty()) {
+            return "";
+        }
+        String[] fields = entry.split(":", -1);
+        if (fields.length == 3) {
+            return entry + ":0";
+        }
+        return entry;
     }
 
     public Attribute updateAttributeServer(int id, int value, int time) throws SQLException {

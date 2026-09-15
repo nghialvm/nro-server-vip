@@ -9,8 +9,10 @@ import Data.DataGame;
 import jbcd.data.GodGK;
 import nro.effect.EffectSkillService;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import models.Item.Item;
 import nro.map.ItemMap;
 import nro.mob.Mob;
@@ -72,6 +74,13 @@ import jbcd.CrisResultSet;
 import org.json.simple.JSONArray;
 
 public class Service {
+
+    private static final int GUEST_ACCOUNT_CREATE_ATTEMPTS = 5;
+    private static final String GUEST_ACCOUNT_INSERT =
+            "insert into account "
+            + "(username,password,active,is_admin,isFounder,isQuanTriVien,accountAgeDays,"
+            + "vetuan,vethang,vetuan_expire,vethang_expire) "
+            + "values (?,?,?,?,?,?,?,?,?,?,?)";
 
     private static Service instance;
     public long lasttimechatbanv = 0;
@@ -555,6 +564,53 @@ public class Service {
                 rs.dispose();
             }
         }
+    }
+
+    /**
+     * Creates the account used by the client's "Chơi mới" flow. The client
+     * logs in with an empty password, so the username must be generated here
+     * and must never be taken from the packet.
+     */
+    public String createGuestAccount() throws Exception {
+        Exception lastException = null;
+        for (int attempt = 0; attempt < GUEST_ACCOUNT_CREATE_ATTEMPTS; attempt++) {
+            String username = createGuestUsername();
+            try {
+                int inserted = ConnectDB.executeUpdate(
+                        GUEST_ACCOUNT_INSERT,
+                        guestAccountValues(username));
+                if (inserted == 1) {
+                    return username;
+                }
+                lastException = new IllegalStateException("Guest account insert affected " + inserted + " rows");
+            } catch (Exception e) {
+                if (!isDuplicateKey(e)) {
+                    throw e;
+                }
+                lastException = e;
+            }
+        }
+        throw new IllegalStateException("Unable to generate a unique guest account", lastException);
+    }
+
+    static String createGuestUsername() {
+        return "guest" + UUID.randomUUID().toString().replace("-", "").substring(0, 15);
+    }
+
+    static Object[] guestAccountValues(String username) {
+        return new Object[]{username, "", 1, 0, 0, 0, 45, 0, 0, 0, 0};
+    }
+
+    private static boolean isDuplicateKey(Throwable error) {
+        Throwable current = error;
+        while (current != null) {
+            if (current instanceof SQLException
+                    && "23000".equals(((SQLException) current).getSQLState())) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
     /**

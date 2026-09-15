@@ -44,6 +44,12 @@ public class MySession extends Session {
     public int userId;
     public String uu;
     public String pp;
+    /**
+     * Username generated for the current guest-login request. Keeping it on
+     * the session makes repeated -101 packets idempotent until this session
+     * finishes logging in or disconnects.
+     */
+    public String guestAccountUsername;
     public int goldBar;
     public int ruby;
 
