@@ -18,14 +18,12 @@ import consts.ConstRatio;
 import nro.player.Player;
 import QuanLiBoss.Manager.BossManager;
 import nro.services.DetuService;
-import nro.services.Service;
 import nro.services.Fun.ChangeMapService;
 import nro.skill.Skill;
 import nro.skill.SkillService;
 import Utils.Logger;
 import Utils.SkillUtil;
 import Utils.Util;
-import nro.map.ItemMap;
 import static nro.server.Manager.player;
 
 public class SuperBrolyNew extends Boss {
@@ -41,13 +39,14 @@ public class SuperBrolyNew extends Boss {
 
     @Override
     public void reward(Player plKill) {
-        int x = this.location.x;
-        int y = this.zone.map.yPhysicInTop(x, this.location.y - 24);
+        if (plKill == null) {
+            return;
+        }
 
-        if (Util.isTrue(30, 100)) {
-            ItemMap nr3 = new ItemMap(this.zone, (short) 568, 1,
-                    x + Util.nextInt(-15, 15), y, plKill.id);
-            Service.gI().dropItemMap(zone, nr3);
+        if (plKill.Detu == null) {
+            DetuService.gI().createMabuPet(plKill);
+        } else {
+            DetuService.gI().changeMabuPet(plKill);
         }
     }
 
