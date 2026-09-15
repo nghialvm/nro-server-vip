@@ -776,6 +776,13 @@ public class Controller implements IMessageHandler {
                     case 0:
                         session.login(msg.reader().readUTF(), msg.reader().readUTF());
                         break;
+                    case 1:
+                        // Registration from the current login screen uses the
+                        // same -29 envelope as login, with action 1.  Keep
+                        // parsing and validation in Service so the legacy
+                        // command 42 flow keeps its existing contract.
+                        Service.gI().regisAccountRequest(session, msg);
+                        break;
                     case 2:
                         Service.gI().setClientType(session, msg);
                         break;

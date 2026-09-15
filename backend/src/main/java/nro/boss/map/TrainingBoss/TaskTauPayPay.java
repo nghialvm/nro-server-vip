@@ -98,6 +98,15 @@ public class TaskTauPayPay extends Boss {
 
     @Override
     public void joinMap() {
+        // The task boss keeps the player's zone reference.  The player may
+        // leave/disconnect before the boss loop reaches JOIN_MAP, in which
+        // case the reference is cleared asynchronously.  Do not call the
+        // spaceship mapper with a detached boss; remove this orphan instead.
+        if (this.zone == null || this.zone.map == null || this.location == null) {
+            BossManager.gI().removeBoss(this);
+            this.dispose();
+            return;
+        }
         ChangeMapService.gI().changeMapBySpaceShip(this, this.zone, 775);
         this.changeStatus(BossStatus.CHAT_S);
     }

@@ -23,6 +23,22 @@ class ServiceRegistrationTest {
     }
 
     @Test
+    void parsesCurrentRegistrationWithOptionalGuestFields() throws Exception {
+        Message message = messageWithUtfFields("user01", "pass01", "guest-account", "a");
+
+        assertArrayEquals(
+                new String[]{"user01", "pass01"},
+                Service.parseCurrentRegistrationCredentials(message));
+    }
+
+    @Test
+    void rejectsUnsupportedCurrentRegistrationFieldCount() throws Exception {
+        Message message = messageWithUtfFields("user01", "pass01", "extra");
+
+        assertNull(Service.parseCurrentRegistrationCredentials(message));
+    }
+
+    @Test
     void parsesLegacyNineFieldFormat() throws Exception {
         Message message = messageWithUtfFields(
                 "0", "1", "2", "3", "4", "5", "6", "legacyUser", "legacyPass");

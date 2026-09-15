@@ -523,42 +523,89 @@ public class Service {
     }
 
     public void regisAccount(Session session, Message _msg) {
-        CrisResultSet rs = null;
+        MySession mySession = (MySession) session;
         try {
             String[] credentials = parseRegistrationCredentials(_msg);
             if (credentials == null) {
-                sendThongBaoOK((MySession) session,
+                sendThongBaoOK(mySession,
                         "Client dang ky khong tuong thich voi server");
                 Logger.eventInfo("Rejected registration packet: unsupported field count");
                 return;
             }
-
-            String user = credentials[0];
-            String pass = credentials[1];
-            if (!(user.length() >= 4 && user.length() <= 18)) {
-                sendThongBaoOK((MySession) session, "Tài khoản phải có độ dài 4-18 ký tự");
-                return;
-            }
-            if (!(pass.length() >= 5 && pass.length() <= 18)) {
-                sendThongBaoOK((MySession) session, "Mật khẩu phải có độ dài 5-18 ký tự");
-                return;
-            }
-            rs = ConnectDB.executeQuery("select * from account where username = ?", user);
-            if (rs.first()) {
-                sendThongBaoOK((MySession) session, "Tài khoản đã tồn tại");
-            } else {
-                Logger.eventInfo("Registered account: " + user);
-                ConnectDB.executeUpdate(
-                        "insert into account (username,password,active,vetuan,vethang,vetuan_expire,vethang_expire) values()",
-                        user, pass, 1, 0, 0, 0, 0);
-                sendThongBaoOK((MySession) session, "Đăng ký tài khoản thành công!");
-            }
+            registerAccount(mySession, credentials[0], credentials[1]);
         } catch (IOException e) {
-            sendThongBaoOK((MySession) session,
+            sendThongBaoOK(mySession,
                     "Du lieu dang ky khong hop le hoac bi cat");
             Logger.eventInfo("Rejected malformed registration packet");
         } catch (Exception e) {
+            sendThongBaoOK(mySession,
+                    "Đăng ký thất bại, vui lòng thử lại sau");
             Logger.logException(Service.class, e);
+        }
+    }
+
+    /**
+     * Handles the registration request sent by the current login screen.
+     * Its wire format is the -29 command followed by action 1, username and
+     * password.  Some client builds append two guest-account fields; they are
+     * accepted for compatibility but are intentionally ignored.
+     */
+    public void regisAccountRequest(MySession session, Message message) {
+        try {
+            String[] credentials = parseCurrentRegistrationCredentials(message);
+            if (credentials == null) {
+                sendThongBaoOK(session,
+                        "Client dang ky khong tuong thich voi server");
+                Logger.eventInfo("Rejected current registration packet: unsupported field count");
+                return;
+            }
+            registerAccount(session, credentials[0], credentials[1]);
+        } catch (IOException e) {
+            sendThongBaoOK(session,
+                    "Du lieu dang ky khong hop le hoac bi cat");
+            Logger.eventInfo("Rejected malformed current registration packet");
+        } catch (Exception e) {
+            sendThongBaoOK(session,
+                    "Đăng ký thất bại, vui lòng thử lại sau");
+            Logger.logException(Service.class, e);
+        }
+    }
+
+    private void registerAccount(MySession session, String user, String pass) throws Exception {
+        if (user == null || user.length() < 4 || user.length() > 18) {
+            sendThongBaoOK(session, "Tài khoản phải có độ dài 4-18 ký tự");
+            return;
+        }
+        if (pass == null || pass.length() < 5 || pass.length() > 18) {
+            sendThongBaoOK(session, "Mật khẩu phải có độ dài 5-18 ký tự");
+            return;
+        }
+
+        CrisResultSet rs = null;
+        try {
+            rs = ConnectDB.executeQuery("select * from account where username = ?", user);
+            if (rs.first()) {
+                sendThongBaoOK(session, "Tài khoản đã tồn tại");
+                return;
+            }
+
+            try {
+                ConnectDB.executeUpdate(
+                        "insert into account (username,password,active,vetuan,vethang,vetuan_expire,vethang_expire) "
+                        + "values (?,?,?,?,?,?,?)",
+                        user, pass, 1, 0, 0, 0, 0);
+            } catch (Exception e) {
+                // The SELECT above is only an early response optimization;
+                // the unique index is the authority when two requests race.
+                if (isDuplicateKey(e)) {
+                    sendThongBaoOK(session, "Tài khoản đã tồn tại");
+                    return;
+                }
+                throw e;
+            }
+
+            Logger.eventInfo("Registered account: " + user);
+            sendThongBaoOK(session, "Đăng ký tài khoản thành công!");
         } finally {
             if (rs != null) {
                 rs.dispose();
@@ -629,6 +676,20 @@ public class Service {
         }
         if (fields.size() == 9) {
             return new String[]{fields.get(7), fields.get(8)};
+        }
+        return null;
+    }
+
+    static String[] parseCurrentRegistrationCredentials(Message message) throws IOException {
+        List<String> fields = new ArrayList<>();
+        while (message.reader().available() > 0) {
+            fields.add(message.readUTF());
+        }
+
+        // username/password are the only fields used by the server.  The
+        // optional pair is usernameAo/mode from older client builds.
+        if (fields.size() == 2 || fields.size() == 4) {
+            return new String[]{fields.get(0), fields.get(1)};
         }
         return null;
     }
