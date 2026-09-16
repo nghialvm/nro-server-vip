@@ -1166,7 +1166,10 @@ public final class AdminHttpServer {
         }
         audit(session, creating ? "CREATE_DETAIL" : "UPDATE_DETAIL", "giftcodes",
                 String.valueOf(giftcodeId), objectOf("rewards", normalizedRewards.size(), "options", normalizedOptions.size()));
-        return loadGiftcodeDetail(giftcodeId);
+        boolean runtimeReloaded = GiftCodeManager.gI().reload();
+        JsonObject detail = loadGiftcodeDetail(giftcodeId);
+        detail.addProperty("runtimeReloaded", runtimeReloaded);
+        return detail;
     }
 
     private JsonObject resetGiftcodeUsedPlayers(int giftcodeId, JsonObject envelope, AdminSession session) throws SQLException {
@@ -1210,7 +1213,10 @@ public final class AdminHttpServer {
         }
         audit(session, "RESET_USED_PLAYERS", "giftcodes", String.valueOf(giftcodeId),
                 objectOf("all", all, "playerIds", requested));
-        return loadGiftcodeDetail(giftcodeId);
+        boolean runtimeReloaded = GiftCodeManager.gI().reload();
+        JsonObject detail = loadGiftcodeDetail(giftcodeId);
+        detail.addProperty("runtimeReloaded", runtimeReloaded);
+        return detail;
     }
 
     private JsonObject loadGiftcodeRaw(Connection connection, int giftcodeId, boolean forUpdate) throws SQLException {
@@ -1363,6 +1369,9 @@ public final class AdminHttpServer {
             JsonObject body = requestData(readJsonObject(exchange));
             validateData(definition, body);
             JsonObject created = insertResource(definition, body, session);
+            if ("giftcodes".equals(resourceName)) {
+                created.addProperty("runtimeReloaded", GiftCodeManager.gI().reload());
+            }
             respondSuccess(exchange, 201, created, null);
             return;
         }
@@ -1390,6 +1399,9 @@ public final class AdminHttpServer {
             }
             validateData(definition, body);
             JsonObject updated = updateResource(definition, id, body, envelope, session);
+            if ("giftcodes".equals(resourceName)) {
+                updated.addProperty("runtimeReloaded", GiftCodeManager.gI().reload());
+            }
             respondSuccess(exchange, 200, updated, null);
             return;
         }
@@ -1397,6 +1409,12 @@ public final class AdminHttpServer {
             requireWritable(definition);
             JsonObject envelope = readJsonObject(exchange);
             deleteResource(definition, id, envelope, session);
+            if ("giftcodes".equals(resourceName)) {
+                JsonObject result = messageData("Giftcode da xoa");
+                result.addProperty("runtimeReloaded", GiftCodeManager.gI().reload());
+                respondSuccess(exchange, 200, result, null);
+                return;
+            }
             respondSuccess(exchange, 200, messageData("Đã xóa dữ liệu"), null);
             return;
         }
@@ -1785,9 +1803,11 @@ public final class AdminHttpServer {
                 String value = target.getAsString().toLowerCase(Locale.ROOT);
                 switch (value) {
                     case "giftcode", "giftcodes" -> {
-                        GiftCodeManager.gI().listGiftCode.clear();
-                        GiftCodeManager.gI().init();
-                        reloaded.add("giftcodes");
+                        if (GiftCodeManager.gI().reload()) {
+                            reloaded.add("giftcodes");
+                        } else {
+                            reloaded.add("giftcodes (failed)");
+                        }
                     }
                     case "shop", "shops" -> {
                         Manager.gI().updateShop();

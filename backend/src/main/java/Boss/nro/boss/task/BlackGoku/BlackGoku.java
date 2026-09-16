@@ -31,18 +31,6 @@ public class BlackGoku extends Boss {
         super(BossID.BLACK_GOKU, false, true, false, false, BossesData.BLACK_GOKU, BossesData.SUPER_BLACK_GOKU);
     }
 
-    /**
-     * A no-hunter reset ends the whole Black Goku cycle. Mark the current
-     * level as the cycle boundary so rest() can wait for the first level's
-     * cooldown instead of waiting forever on SUPER_BLACK_GOKU (which is an
-     * ANOTHER_LEVEL stage and is not a standalone spawn stage).
-     */
-    @Override
-    protected void autoResetBossBecauseNoHunter() {
-        super.autoResetBossBecauseNoHunter();
-        this.currentLevel = this.data.length;
-    }
-
     @Override
     public void reward(Player plKill) {
         BadgesTaskService.updateCountBagesTask(plKill, ConstTaskBadges.TRUM_SAN_BOSS, 1);

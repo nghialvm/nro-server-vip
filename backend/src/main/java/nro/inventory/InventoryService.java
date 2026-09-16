@@ -41,6 +41,8 @@ import static nro.server.Manager.player;
 public class InventoryService {
 
     private static InventoryService I;
+    private static final int THOI_VANG_ITEM_ID = 457;
+    private static final int THOI_VANG_MAX_STACK = 100_000;
 
     public static InventoryService gI() {
         if (InventoryService.I == null) {
@@ -1586,6 +1588,84 @@ public class InventoryService {
 
     public boolean addItemBoxClan(Player player, Item item) {
         return addItemList(player.clan.itemsBoxClan, item);
+    }
+
+    public boolean canAddThoiVang(Player player, int quantity) {
+        if (player == null || player.inventory == null || quantity <= 0) {
+            return false;
+        }
+        synchronized (player.inventory.itemsBag) {
+            return canFitThoiVang(player.inventory.itemsBag, quantity);
+        }
+    }
+
+    /**
+     * Adds item 457 in an all-or-nothing operation. The generic item inserter
+     * can partially fill stacks before reporting a full bag, which is unsafe
+     * for transfers backed by account.thoi_vang.
+     */
+    public boolean addThoiVang(Player player, int quantity) {
+        if (player == null || player.inventory == null || quantity <= 0) {
+            return false;
+        }
+
+        List<Item> items = player.inventory.itemsBag;
+        synchronized (items) {
+            if (!canFitThoiVang(items, quantity)) {
+                return false;
+            }
+
+            Item itemAdd = ItemService.gI().createNewItem((short) THOI_VANG_ITEM_ID, quantity);
+            if (itemAdd == null || !itemAdd.isNotNullItem()) {
+                return false;
+            }
+            if (itemAdd.itemOptions.isEmpty()) {
+                itemAdd.itemOptions.add(new ItemOption(73, 0));
+            }
+
+            int remaining = quantity;
+            for (Item item : items) {
+                if (item != null && item.isNotNullItem() && item.template.id == THOI_VANG_ITEM_ID
+                        && !hasOptionTemplateId(item, 30)) {
+                    int space = THOI_VANG_MAX_STACK - item.quantity;
+                    if (space > 0) {
+                        int added = Math.min(space, remaining);
+                        item.quantity += added;
+                        remaining -= added;
+                        if (remaining <= 0) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            for (int index = 0; index < items.size() && remaining > 0; index++) {
+                Item slot = items.get(index);
+                if (slot == null || !slot.isNotNullItem()) {
+                    Item newItem = ItemService.gI().copyItem(itemAdd);
+                    newItem.quantity = Math.min(remaining, THOI_VANG_MAX_STACK);
+                    items.set(index, newItem);
+                    remaining -= newItem.quantity;
+                }
+            }
+            return remaining <= 0;
+        }
+    }
+
+    private boolean canFitThoiVang(List<Item> items, int quantity) {
+        long capacity = 0;
+        for (Item item : items) {
+            if (item != null && item.isNotNullItem() && item.template.id == THOI_VANG_ITEM_ID
+                    && !hasOptionTemplateId(item, 30)) {
+                capacity += Math.max(0, THOI_VANG_MAX_STACK - item.quantity);
+            } else if (item == null || !item.isNotNullItem()) {
+                capacity += THOI_VANG_MAX_STACK;
+            }
+            if (capacity >= quantity) {
+                return true;
+            }
+        }
+        return capacity >= quantity;
     }
 
     public boolean addItemList(List<Item> items, Item itemAdd) {

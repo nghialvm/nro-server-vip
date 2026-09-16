@@ -7,6 +7,7 @@ import nro.services.Fun.Input;
 import nro.services.NpcService;
 import nro.services.Service;
 import nro.services.TaskService;
+import Utils.Logger;
 import Utils.Util;
 import consts.ConstDailyGift;
 import consts.ConstNpc;
@@ -21,6 +22,7 @@ import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.util.List;
 import jbcd.ConnectDB;
+import jbcd.CrisResultSet;
 import jbcd.dao.PlayerDAO;
 import models.Item.Item;
 import models.Item.ItemService;
@@ -570,16 +572,13 @@ public class OngGohan extends Npc {
     private void handleSupportMenu(Player player, int select) {
         switch (select) {
             case 0: {
-                if (player.inventory.gem >= 2_000_000) {
-                    Service.getInstance().sendThongBao(player, "Đớp ít thôi con!");
-                    return;
-                }
-                player.inventory.gem += 2_000_000;
-                Service.gI().sendMoney(player);
-                Service.gI().sendThongBao(player, "Bạn nhận được 2 củ ngọc xanh.");
+                claimFreeGem(player);
                 break;
             }
             case 1: {
+                if (!refreshGoldBarFromDatabase(player)) {
+                    return;
+                }
                 int thoivang = player.getSession().goldBar;
                 this.createOtherMenu(player, ConstNpc.CONFIRM_THOIVANG,
                         "|2|Bạn có : " + thoivang + " Thỏi vàng\n",
@@ -776,33 +775,110 @@ public class OngGohan extends Npc {
         }
     }
 
-    private void Nhanthoivang(Player player, int select) {
-        switch (select) {
-            case 0: {
-                int thoivang = player.getSession().goldBar;
+    private void claimFreeGem(Player player) {
+        synchronized (player) {
+            final int freeGemLimit = 2_000_000;
+            int currentGem = Math.max(0, player.inventory.gem);
+            if (currentGem >= freeGemLimit) {
+                Service.gI().sendThongBao(player, "Đớp ít thôi con!");
+                return;
+            }
 
-                if (thoivang <= 0) {
-                    Service.gI().sendThongBao(player, "Bạn không có thỏi vàng nào để nhận!");
-                    return;
-                }
-                Item thoiVang = ItemService.gI().createNewItem((short) 457, thoivang);
-                InventoryService.gI().addItemBag(player, thoiVang);
-                InventoryService.gI().sendItemBag(player);
+            int amount = freeGemLimit - currentGem;
+            player.inventory.addGem(amount);
+            PlayerDAO.updatePlayer(player);
+            Service.gI().sendMoney(player);
+            Service.gI().sendThongBao(player, "Bạn nhận được " + Util.format(amount) + " ngọc xanh.");
+        }
+    }
+
+    private boolean refreshGoldBarFromDatabase(Player player) {
+        CrisResultSet result = null;
+        try {
+            result = ConnectDB.executeQuery(
+                    "SELECT thoi_vang FROM account WHERE id = ?",
+                    player.account_id
+            );
+            if (result.next()) {
+                player.getSession().goldBar = Math.max(0, result.getInt("thoi_vang"));
+            } else {
+                player.getSession().goldBar = 0;
+            }
+            return true;
+        } catch (Exception e) {
+            Logger.logException(OngGohan.class, e, "Loi dong bo thoi vang");
+            Service.gI().sendThongBao(player, "Không thể kiểm tra thỏi vàng, vui lòng thử lại.");
+            return false;
+        } finally {
+            if (result != null) {
+                result.dispose();
+            }
+        }
+    }
+
+    private void claimGoldBars(Player player) {
+        synchronized (player) {
+            if (!refreshGoldBarFromDatabase(player)) {
+                return;
+            }
+
+            int amount = player.getSession().goldBar;
+            if (amount <= 0) {
+                Service.gI().sendThongBao(player, "Bạn không có thỏi vàng nào để nhận!");
+                return;
+            }
+            if (!InventoryService.gI().canAddThoiVang(player, amount)) {
+                Service.gI().sendThongBao(player, "Hành trang không đủ chỗ để nhận toàn bộ thỏi vàng.");
+                return;
+            }
+
+            int updated;
+            try {
+                updated = ConnectDB.executeUpdate(
+                        "UPDATE account SET thoi_vang = 0 WHERE id = ? AND thoi_vang = ?",
+                        player.account_id,
+                        amount
+                );
+            } catch (Exception e) {
+                Logger.logException(OngGohan.class, e, "Loi cap nhat thoi vang");
+                Service.gI().sendThongBao(player, "Lỗi khi cập nhật dữ liệu, vui lòng thử lại.");
+                return;
+            }
+
+            if (updated != 1) {
+                refreshGoldBarFromDatabase(player);
+                Service.gI().sendThongBao(player, "Dữ liệu thỏi vàng đã thay đổi, vui lòng mở lại menu.");
+                return;
+            }
+
+            if (!InventoryService.gI().addThoiVang(player, amount)) {
                 try {
                     ConnectDB.executeUpdate(
-                            "UPDATE account SET thoi_vang = 0 WHERE id = ?",
+                            "UPDATE account SET thoi_vang = ? WHERE id = ? AND thoi_vang = 0",
+                            amount,
                             player.account_id
                     );
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    Service.gI().sendThongBao(player, "Lỗi khi cập nhật dữ liệu: " + e.getMessage());
-                    return;
+                    Logger.logException(OngGohan.class, e, "Loi hoan tac thoi vang");
                 }
-                player.getSession().goldBar = 0;
-                Service.gI().sendThongBao(player, "Bạn đã nhận được x" + Util.format(thoivang) + " Thỏi Vàng!");
-                Service.gI().sendMoney(player);
-                break;
+                refreshGoldBarFromDatabase(player);
+                Service.gI().sendThongBao(player, "Không thể thêm thỏi vàng vào hành trang, dữ liệu đã được giữ lại.");
+                return;
             }
+
+            player.getSession().goldBar = 0;
+            PlayerDAO.updatePlayer(player);
+            InventoryService.gI().sendItemBag(player);
+            Service.gI().sendThongBao(player, "Bạn đã nhận được x" + Util.format(amount) + " Thỏi Vàng!");
+            Service.gI().sendMoney(player);
+        }
+    }
+
+    private void Nhanthoivang(Player player, int select) {
+        switch (select) {
+            case 0:
+                claimGoldBars(player);
+                break;
 
             case 1:
                 Service.gI().sendThongBao(player, "Đã thoát.");

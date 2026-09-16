@@ -157,8 +157,14 @@ public class Drabura2 extends Boss {
 
         if (Util.canDoWithTime(lastTimeRest, 5000)) {
             if (!this.callBoss) {
-                for (Boss boss : this.bossAppearTogether[this.currentLevel]) {
-                    boss.changeStatus(BossStatus.RESPAWN);
+                int level = Math.max(0, Math.min(this.currentLevel, this.bossAppearTogether.length - 1));
+                Boss[] relatedBosses = this.bossAppearTogether[level];
+                if (relatedBosses != null) {
+                    for (Boss boss : relatedBosses) {
+                        if (boss != null) {
+                            boss.changeStatus(BossStatus.RESPAWN);
+                        }
+                    }
                 }
                 this.callBoss = true;
             }

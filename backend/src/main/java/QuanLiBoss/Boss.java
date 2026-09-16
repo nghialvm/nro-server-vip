@@ -980,6 +980,10 @@ public synchronized double injured(Player plAtt, double damage, boolean piercing
     }
 }
 protected void autoResetBossBecauseNoHunter() {
+    // A no-hunter reset ends the current multi-stage cycle. Without moving
+    // the level to the cycle boundary, REST can wait forever on an
+    // ANOTHER_LEVEL entry (for example Fide and Black Goku).
+    this.currentLevel = this.data.length;
     try {
         if (this.zone != null && canSendNotify()) {
             ServerNotify.gI().notify("BOSS " + this.name + " vừa  " + this.zone.map.mapName);

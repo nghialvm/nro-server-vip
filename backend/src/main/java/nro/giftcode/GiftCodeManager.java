@@ -20,6 +20,7 @@ import jbcd.CrisResultSet;
 public class GiftCodeManager {
     public String name;
     public final ArrayList<GiftCode> listGiftCode = new ArrayList<>();
+    private final Object giftCodeLock = new Object();
 
     private static GiftCodeManager instance;
 
@@ -31,54 +32,76 @@ public class GiftCodeManager {
     }
 
     public void init() {
-        try (Connection con = ConnectDB.getConnection();) {
-            PreparedStatement ps = con.prepareStatement("SELECT * FROM giftcode");
-            ResultSet rs = ps.executeQuery();
+        reload();
+    }
+
+    /**
+     * Reloads gift codes without exposing a partially loaded cache to players.
+     * The existing list object is preserved for compatibility with callers,
+     * but it is only replaced while the manager lock is held.
+     */
+    public boolean reload() {
+        ArrayList<GiftCode> loadedGiftCodes = new ArrayList<>();
+        try (Connection con = ConnectDB.getConnection();
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM giftcode");
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                GiftCode giftcode = new GiftCode();
-                ArrayList<Integer> tempListIdPlayer = new ArrayList<>();
-                String tempDBListIdPlayers;
-                giftcode.code = rs.getString("code");
-                giftcode.countLeft = rs.getInt("count_left");
-                giftcode.datecreate = rs.getTimestamp("datecreate");
-                giftcode.dateexpired = rs.getTimestamp("expired");
-                String dbListIdPlayer = rs.getString("listIdPlayers");
-                JSONArray jar = (JSONArray) JSONValue.parse(rs.getString("item"));
-                if (jar != null) {
-                    for (int i = 0; i < jar.size(); ++i) {
-                        JSONObject jsonObj = (JSONObject) jar.get(i);
-                        giftcode.detail.put(Integer.valueOf(jsonObj.get("id").toString()),
-                                Integer.valueOf(jsonObj.get("quantity").toString()));
-                        jsonObj.clear();
-                    }
-                }
-                JSONArray option = (JSONArray) JSONValue.parse(rs.getString("option"));
-                if (option != null) {
-                    for (int u = 0; u < option.size(); u++) {
-                        JSONObject jsonobject = (JSONObject) option.get(u);
-                        giftcode.option.add(new ItemOption(Integer.parseInt(jsonobject.get("id").toString()),
-                                Integer.parseInt(jsonobject.get("param").toString())));
-                        jsonobject.clear();
-                    }
-                }
-                if (!dbListIdPlayer.isEmpty()) {
-                    tempDBListIdPlayers = dbListIdPlayer = removeCharAt(dbListIdPlayer, 0);
-                    tempDBListIdPlayers = dbListIdPlayer = removeCharAt(dbListIdPlayer, dbListIdPlayer.length() - 1);
-                    String[] resultTempDBListPlayer = tempDBListIdPlayers.split(",");
-                    for (String item : resultTempDBListPlayer) {
-                        if (!item.isEmpty())
-                            tempListIdPlayer.add(Integer.parseInt(item));
-                    }
-                    giftcode.listIdPlayer = tempListIdPlayer;
-                }
-                listGiftCode.add(giftcode);
+                loadedGiftCodes.add(readGiftCode(rs));
             }
-            con.close();
-            ps.close();
-            rs.close();
-            Logger.log(Logger.GREEN,"LOAD GIFTCODE (" + listGiftCode.size() + ") SUCCESS\n");
-        } catch (Exception erorlog) {
+
+            synchronized (giftCodeLock) {
+                listGiftCode.clear();
+                listGiftCode.addAll(loadedGiftCodes);
+            }
+            Logger.log(Logger.GREEN, "LOAD GIFTCODE (" + loadedGiftCodes.size() + ") SUCCESS\n");
+            return true;
+        } catch (Exception error) {
+            Logger.logException(GiftCodeManager.class, error, "Loi reload giftcode");
+            return false;
         }
+    }
+
+    private GiftCode readGiftCode(ResultSet rs) throws Exception {
+        GiftCode giftcode = new GiftCode();
+        giftcode.code = rs.getString("code");
+        giftcode.countLeft = rs.getInt("count_left");
+        giftcode.datecreate = rs.getTimestamp("datecreate");
+        giftcode.dateexpired = rs.getTimestamp("expired");
+
+        JSONArray items = (JSONArray) JSONValue.parse(rs.getString("item"));
+        if (items != null) {
+            for (Object value : items) {
+                JSONObject jsonObj = (JSONObject) value;
+                giftcode.detail.put(Integer.valueOf(jsonObj.get("id").toString()),
+                        Integer.valueOf(jsonObj.get("quantity").toString()));
+            }
+        }
+
+        JSONArray options = (JSONArray) JSONValue.parse(rs.getString("option"));
+        if (options != null) {
+            for (Object value : options) {
+                JSONObject jsonObject = (JSONObject) value;
+                giftcode.option.add(new ItemOption(Integer.parseInt(jsonObject.get("id").toString()),
+                        Integer.parseInt(jsonObject.get("param").toString())));
+            }
+        }
+
+        String dbListIdPlayer = rs.getString("listIdPlayers");
+        if (dbListIdPlayer != null && !dbListIdPlayer.isBlank()) {
+            String rawIds = dbListIdPlayer.trim();
+            if (rawIds.startsWith("[") && rawIds.endsWith("]")) {
+                rawIds = rawIds.substring(1, rawIds.length() - 1);
+            }
+            if (!rawIds.isBlank()) {
+                for (String item : rawIds.split(",")) {
+                    String trimmed = item.trim();
+                    if (!trimmed.isEmpty()) {
+                        giftcode.listIdPlayer.add(Integer.parseInt(trimmed));
+                    }
+                }
+            }
+        }
+        return giftcode;
     }
 
     public void updateGiftCodeListIdPlayer(ArrayList<Integer> listIdPlayers, String code) {
@@ -95,24 +118,28 @@ public class GiftCodeManager {
     }
 
     public GiftCode checkUseGiftCode(int idPlayer, String code) {
-        for (GiftCode giftCode : listGiftCode) {
-            if (giftCode.code.equals(code) && giftCode.countLeft > 0 && !giftCode.isUsedGiftCode(idPlayer)) {
-                giftCode.countLeft -= 1;
-                giftCode.addPlayerUsed(idPlayer);
-                updateGiftCodeListIdPlayer(giftCode.listIdPlayer, code);
-                return giftCode;
+        synchronized (giftCodeLock) {
+            for (GiftCode giftCode : listGiftCode) {
+                if (giftCode.code.equals(code) && giftCode.countLeft > 0 && !giftCode.isUsedGiftCode(idPlayer)) {
+                    giftCode.countLeft -= 1;
+                    giftCode.addPlayerUsed(idPlayer);
+                    updateGiftCodeListIdPlayer(giftCode.listIdPlayer, code);
+                    return giftCode;
+                }
             }
+            return null;
         }
-        return null;
     }
     
     public GiftCode CheckCode(int idPlayer, String code) {
-        for (GiftCode giftCode : listGiftCode) {
-            if (giftCode.code.equals(code) && giftCode.countLeft > 0 && !giftCode.isUsedGiftCode(idPlayer)) {
-                return giftCode;
+        synchronized (giftCodeLock) {
+            for (GiftCode giftCode : listGiftCode) {
+                if (giftCode.code.equals(code) && giftCode.countLeft > 0 && !giftCode.isUsedGiftCode(idPlayer)) {
+                    return giftCode;
+                }
             }
+            return null;
         }
-        return null;
     }
 
     public void checkInfomationGiftCode(Player p) throws Exception {

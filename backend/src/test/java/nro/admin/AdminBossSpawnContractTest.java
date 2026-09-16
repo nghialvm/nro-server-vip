@@ -14,6 +14,7 @@ import QuanLiBoss.BossStatus;
 import QuanLiBoss.BossesData;
 import QuanLiBoss.Manager.BossManager;
 import Boss.nro.boss.task.BlackGoku.BlackGoku;
+import nro.boss.task.Frieza.Fide;
 import com.google.gson.JsonObject;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -112,7 +113,7 @@ class AdminBossSpawnContractTest {
         BossManager manager = BossManager.gI();
         Boss boss = manager.createBoss(BossID.BLACK_GOKU);
         try {
-            Method reset = BlackGoku.class.getDeclaredMethod("autoResetBossBecauseNoHunter");
+            Method reset = Boss.class.getDeclaredMethod("autoResetBossBecauseNoHunter");
             reset.setAccessible(true);
             reset.invoke(boss);
 
@@ -122,6 +123,29 @@ class AdminBossSpawnContractTest {
             var lastTimeRest = Boss.class.getDeclaredField("lastTimeRest");
             lastTimeRest.setAccessible(true);
             lastTimeRest.setLong(boss, System.currentTimeMillis() - 15 * 60 * 1000L - 1);
+            boss.rest();
+            assertEquals(BossStatus.RESPAWN, boss.bossStatus);
+        } finally {
+            manager.removeBoss(boss);
+            boss.dispose();
+        }
+    }
+
+    @Test
+    void fideNoHunterResetCanStartTheNextRestCycle() throws Exception {
+        BossManager manager = BossManager.gI();
+        Boss boss = manager.createBoss(BossID.FIDE);
+        try {
+            Method reset = Boss.class.getDeclaredMethod("autoResetBossBecauseNoHunter");
+            reset.setAccessible(true);
+            reset.invoke(boss);
+
+            assertEquals(boss.data.length, boss.currentLevel);
+            assertEquals(BossStatus.REST, boss.bossStatus);
+
+            var lastTimeRest = Boss.class.getDeclaredField("lastTimeRest");
+            lastTimeRest.setAccessible(true);
+            lastTimeRest.setLong(boss, System.currentTimeMillis() - 10 * 60 * 1000L - 1);
             boss.rest();
             assertEquals(BossStatus.RESPAWN, boss.bossStatus);
         } finally {
