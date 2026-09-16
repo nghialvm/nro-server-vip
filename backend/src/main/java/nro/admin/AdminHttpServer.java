@@ -629,8 +629,11 @@ public final class AdminHttpServer {
                 Map<Integer, JsonObject> currentItems = new LinkedHashMap<>();
                 for (JsonElement element : currentTab.getAsJsonArray("items")) {
                     JsonObject item = element.getAsJsonObject();
-                    validateAllowedFields(item, Set.of("id", "temp_id", "is_new", "is_sell", "type_sell",
-                            "cost", "costgold", "icon_spec", "options"), "shop item");
+                    // currentTab comes from loadShopDetail(), so each item also contains
+                    // read-only/enriched fields (tab_id, create_time, itemTemplate and
+                    // version). It is database data, not an incoming shop-item payload;
+                    // validating it with the write-field allowlist rejects every update
+                    // as soon as the tab has an existing item.
                     currentItems.put(item.get("id").getAsInt(), item);
                 }
                 Set<Integer> seenItems = new LinkedHashSet<>();
@@ -644,6 +647,10 @@ public final class AdminHttpServer {
                         throw ApiException.badRequest("INVALID_SHOP_ITEM", "Item thứ " + (index + 1) + " phải là object");
                     }
                     JsonObject item = element.getAsJsonObject();
+                    Integer declaredTabId = optionalJsonInt(item, "tab_id", 1, Integer.MAX_VALUE);
+                    if (declaredTabId != null && declaredTabId != tabId) {
+                        throw ApiException.badRequest("INVALID_SHOP_ITEM_TAB", "tab_id của item không khớp tab URL");
+                    }
                     Integer existingId = optionalJsonInt(item, "id", 1, Integer.MAX_VALUE);
                     if (existingId != null) {
                         if (!currentItems.containsKey(existingId) || !seenItems.add(existingId)) {
