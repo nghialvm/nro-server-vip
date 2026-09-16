@@ -15,9 +15,7 @@ import Utils.Util;
 import nro.skill.SkillService;
 import Utils.SkillUtil;
 
-/**
- * @author Administrator
- */
+
 public class GiaiPhongAnNgoKhong extends Boss {
 
     public GiaiPhongAnNgoKhong(int bossID, BossData bossData, Zone zone, int x, int y) throws Exception {

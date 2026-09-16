@@ -1,25 +1,21 @@
-package AnwinManager;
+package manager;
 
 import nro.server.Client;
 import Utils.Logger;
 import Utils.TimeUtil;
-import Utils.Util;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import jbcd.dao.PlayerDAO;
 
-import java.util.concurrent.ScheduledExecutorService;
 
+public class NroManager {
 
+    private static NroManager instance = null;
 
-public class AnwinManager {
-
-    private static AnwinManager instance = null;
-
-    public static synchronized AnwinManager getInstance() {
+    public static synchronized NroManager getInstance() {
         if (instance == null) {
-            instance = new AnwinManager();
+            instance = new NroManager();
         }
         return instance;
     }
@@ -55,8 +51,3 @@ public class AnwinManager {
     }
 
 }
-
-
-
-
-

@@ -10138,8 +10138,7 @@ CREATE TABLE `notify` (
 --
 
 INSERT INTO `notify` (`id`, `name`, `text`) VALUES
-(3, '3. ADMIN', 'Mọi thắc mắc liên hệ zalo 0373713573 ADMIN'),
-(4, '4. ADMIN Thông Báo', 'Mọi hành vi bug sẽ bị band acc vĩnh viễn');
+(1, 'ADMIN Thông báo', 'Mọi hành vi bug/cheat/hack sẽ bị khóa tài khoản vĩnh viễn'),
 
 -- --------------------------------------------------------
 

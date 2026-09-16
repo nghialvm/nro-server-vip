@@ -5,10 +5,7 @@ import Utils.Util;
 import event.Event;
 import jbcd.dao.EventDAO;
 
-/**
- *
- * @author Anwin
- */
+
 public class HungVuong extends Event {
 
     @Override

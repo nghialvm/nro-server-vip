@@ -67,7 +67,7 @@ public class Santa extends Npc {
                     "Cửa hàng",
                     "Mở rộng\nHành trang\nRương đồ",
                    "Nhập mã\nquà tặng",
-                    "Shop",
+                    "Shop Vip",
                    "Tiệm\nHớt tóc",
                     "Danh\nhiệu",
                     "Kiểm tra\nGiao dịch\n1 ngọc"
@@ -156,60 +156,23 @@ public class Santa extends Npc {
                             ShopService.gI().opendShop(player, "SANTA_MO_RONG_HANH_TRANG", false);
                             break;
                         case 2: // Cửa hàng hạn sử dụng
-//                            ShopService.gI().opendShop(player, "SANTA_HAN_SU_DUNG", false);
-                              ShopService.gI().opendShop(player, "SHOP_NRO", false);
+                            ShopService.gI().opendShop(player, "SANTA_HAN_SU_DUNG", false);
                             break;
-
-//                        case 2: // Nhập mã quà tặng
-//                            Input.gI().createFormGiftCode(player);
-//                            break;
-//                        case 3: // Cửa hàng hạn sử dụng
-//                            ShopService.gI().opendShop(player, "SANTA_HAN_SU_DUNG", false);
-//                            break;
-                        case 3:
-                            if (!player.inventory.itemsDaBan.isEmpty()) {
-                                ShopService.gI().opendShop(player, "ITEMS_DABAN", false);
-                            } else {                           
-                                ShopService.gI().opendShop(player, "SANTA_DANH_HIEU", false);
-                            }
+                        case 3: // Nhập mã quà tặng
+                            Input.gI().createFormGiftCode(player);
                             break;
-//                        case 4: {
-//                            if (!player.inventory.itemsDaBan.isEmpty()) {
-//                                ShopService.gI().opendShop(player, "ITEMS_DABAN", false);
-//                            } else {
-//                                ShopService.gI().opendShop(player, "SANTA_HEAD", false);
-//                            }
-//                            break;
-//                        }
-                         case 4:
-                            if (!player.inventory.itemsDaBan.isEmpty()) {
-                                ShopService.gI().opendShop(player, "SANTA_DANH_HIEU", false);
-                            } else {
-                                kiemTraVaBatDauXemLichSuGiaoDich(player);
-                            }
+                        case 4: // SHOP VIP
+                            ShopService.gI().opendShop(player, "SHOP_NRO", false);
                             break;
-//                        case 5: {
-//                            if (!player.inventory.itemsDaBan.isEmpty()) {
-//                                ShopService.gI().opendShop(player, "SANTA_HEAD", false);
-//                            } else {
-//                                ShopService.gI().opendShop(player, "SANTA_DANH_HIEU", false);
-//                            }
-//                            break;
-//                        }
-                        case 5:
+                        case 5: // Đổi tóc
+                            ShopService.gI().opendShop(player, "SANTA_HEAD", false);
+                            break;
+                        case 6: // Shop danh hiệu
+                            ShopService.gI().opendShop(player, "SANTA_DANH_HIEU", false);
+                            break;
+                        case 7: // Kiểm tra lịch sử giao dịch
                             kiemTraVaBatDauXemLichSuGiaoDich(player);
                             break;
-//                        case 6: {
-//                            if (!player.inventory.itemsDaBan.isEmpty()) {
-//                                ShopService.gI().opendShop(player, "SANTA_DANH_HIEU", false);
-//                            } else {
-//                                kiemTraVaBatDauXemLichSuGiaoDich(player);
-//                            }
-//                            break;
-//                        }
-//                        case 7:
-//                            kiemTraVaBatDauXemLichSuGiaoDich(player);
-//                            break;
                     }
                 } else if (player.iDMark.getIndexMenu() == ConstNpc.SHOP_SANTA) {
                     switch (select) {
@@ -223,8 +186,8 @@ public class Santa extends Npc {
                             ShopService.gI().opendShop(player, "SANTA", false);
                             break;
                         case 1:
-                            Service.gI().chat(player, "Chức năng đang được cập nhât!");
-                            //ShopService.gI().opendShop(player, "SELL_80", false);
+                            // Service.gI().chat(player, "Chức năng đang được cập nhât!");
+                            ShopService.gI().opendShop(player, "SELL_80", false);
                             break;
                     }
                 } else if (player.iDMark.getIndexMenu() == ConstNpc.SHOP_SANTA50_VIP) {
@@ -233,8 +196,8 @@ public class Santa extends Npc {
                             ShopService.gI().opendShop(player, "SANTA", false);
                             break;
                         case 1:
-                            Service.gI().chat(player, "Chức năng đang được cập nhât!");
-                            //ShopService.gI().opendShop(player, "SELL_50", false);
+                            // Service.gI().chat(player, "Chức năng đang được cập nhât!");
+                            ShopService.gI().opendShop(player, "SELL_50", false);
                             break;
                     }
                 } else if (player.iDMark.getIndexMenu() == ConstNpc.SHOP_SANTA50_80) {
@@ -243,12 +206,12 @@ public class Santa extends Npc {
                             ShopService.gI().opendShop(player, "SANTA", false);
                             break;
                         case 1:
-                            Service.gI().chat(player, "Chức năng đang được cập nhât!");
-                            // ShopService.gI().opendShop(player, "SELL_50", false);
+                            // Service.gI().chat(player, "Chức năng đang được cập nhât!");
+                            ShopService.gI().opendShop(player, "SELL_50", false);
                             break;
                         case 2:
-                            Service.gI().chat(player, "Chức năng đang được cập nhât!");
-                            //ShopService.gI().opendShop(player, "SELL_80", false);
+                            // Service.gI().chat(player, "Chức năng đang được cập nhât!");
+                            ShopService.gI().opendShop(player, "SELL_80", false);
                             break;
                     }
                 } else if (player.iDMark.getIndexMenu() == ConstNpc.NHAN_KEO_HALLOWEEN) {
