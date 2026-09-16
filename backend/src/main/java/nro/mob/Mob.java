@@ -1271,7 +1271,7 @@ public class Mob {
         }
 
          // ------------------ DROP THỨC ĂN KHI MANG ĐỒ THẦN LINH ------------------
-        if (MapService.gI().isMapCold(mapid) && Util.isTrue(1, 30)) {
+        if (MapService.gI().isMapCold(mapid) && Util.isTrue(1, 1)) {
             int countSet = 0;
             for (Item item : player.inventory.itemsBody) {
                 if (item != null && item.isNotNullItem() && item.isDTL()) {
@@ -1311,7 +1311,7 @@ public class Mob {
             }
         }
         // ------------------ DROP ITEM KHI MẶC FULL SET HỦY DIỆT ------------------
-        if (mapid >= 161 && mapid <= 163 && Util.isTrue(1, 100)) {
+        if (mapid >= 161 && mapid <= 163 && Util.isTrue(1, 1)) {
             int countSetHuyDiet = 0;
 
             for (Item item : player.inventory.itemsBody) {
@@ -1339,24 +1339,24 @@ public class Mob {
 
         //-------------------MAP HIRUDEGARN----------------------------
         if (MapService.gI().isMapHirudegarn(mapid)) {
-//            if (Util.isTrue(5, 50)) {
-//                if (Util.isTrue(1, 2)) {
-//                    ItemMap it = ItemService.gI().randDoTLBoss(this.zone, 1, x + Util.nextInt(-35, 35), yEnd, player.id);
-//                    if (it != null) {
-//                        Service.gI().dropItemMap(zone, it);
-//                    }
-//                }
-//            }
-//            if (Util.isTrue(1, 2)) {
-//                ItemMap it = new ItemMap(this.zone, 568, 1, x + Util.nextInt(-10, 10), yEnd, player.id);
-//                Service.gI().dropItemMap(this.zone, it);
-//            }
-//            if (Util.isTrue(1, 2) && player.mabuEgg != null) {
-//                ItemMap it = new ItemMap(this.zone, 1911, 1, x + Util.nextInt(-15, 15), yEnd, player.id);
-//                it.addOptionParam(262, 0);
-//                it.addOptionParam(30, 0);
-//                Service.gI().dropItemMap(this.zone, it);
-//            }
+            if (Util.isTrue(5, 50)) {
+                if (Util.isTrue(1, 2)) {
+                    ItemMap it = ItemService.gI().randDoTLBoss(this.zone, 1, x + Util.nextInt(-35, 35), yEnd, player.id);
+                    if (it != null) {
+                        Service.gI().dropItemMap(zone, it);
+                    }
+                }
+            }
+            if (Util.isTrue(1, 2)) {
+                ItemMap it = new ItemMap(this.zone, 568, 1, x + Util.nextInt(-10, 10), yEnd, player.id);
+                Service.gI().dropItemMap(this.zone, it);
+            }
+            if (Util.isTrue(1, 2) && player.mabuEgg != null) {
+                ItemMap it = new ItemMap(this.zone, 1911, 1, x + Util.nextInt(-15, 15), yEnd, player.id);
+                it.addOptionParam(262, 0);
+                it.addOptionParam(30, 0);
+                Service.gI().dropItemMap(this.zone, it);
+            }
         }
         if (MapService.gI().isMapBinhHutNangLuong(mapid) && InventoryService.gI().findItemBinhHutNangLuong(player)) {
             for (Item item : player.inventory.itemsBag) {

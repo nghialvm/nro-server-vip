@@ -59,28 +59,34 @@ public class Cooler extends Boss {
         }
 
         // ================== 2. Đồ Thần Linh (1/30) ==================
-        if (Util.isTrue(2, 10)) {
+        if (Util.isTrue(1, 1)) {
             short[] thanLinh = {555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567};
             short itemId = thanLinh[Util.nextInt(0, thanLinh.length - 1)];
             dropCustomItem(itemId, x, y, plKill);
         }
 
-        // ================== 3. Ngọc Rồng 3 sao (1/5) ==================
-        if (Util.isTrue(1, 2)) {
-            ItemMap nr3 = new ItemMap(this.zone, (short) 15, 1,
-                    x + Util.nextInt(-15, 15), y, plKill.id);
-            Service.gI().dropItemMap(zone, nr3);
-        }
-
-        if (Util.isTrue(1, 100)) {
+        // ================== 3. Ngọc Rồng 1, 2, 3 sao (1/5) ==================
+        if (Util.isTrue(1, 7)) {
             ItemMap nr3 = new ItemMap(this.zone, (short) 14, 1,
                     x + Util.nextInt(-15, 15), y, plKill.id);
             Service.gI().dropItemMap(zone, nr3);
         }
 
+        if (Util.isTrue(2, 7)) {
+            ItemMap nr3 = new ItemMap(this.zone, (short) 15, 1,
+                    x + Util.nextInt(-15, 15), y, plKill.id);
+            Service.gI().dropItemMap(zone, nr3);
+        }
+
+        if (Util.isTrue(3, 7)) {
+            ItemMap nr3 = new ItemMap(this.zone, (short) 16, 1,
+                    x + Util.nextInt(-15, 15), y, plKill.id);
+            Service.gI().dropItemMap(zone, nr3);
+        }
+
         // thỏi vàng
-        if (Util.isTrue(2, 5)) {
-            ItemMap nr3 = new ItemMap(this.zone, (short) 457, 10,
+        if (Util.isTrue(1, 1)) {
+            ItemMap nr3 = new ItemMap(this.zone, (short) 457, 100,
                     x + Util.nextInt(-15, 15), y, plKill.id);
             Service.gI().dropItemMap(zone, nr3);
         }

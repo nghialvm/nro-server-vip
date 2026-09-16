@@ -25,6 +25,7 @@ import nro.skill.SkillService;
 import Utils.Logger;
 import Utils.SkillUtil;
 import Utils.Util;
+import nro.map.ItemMap;
 import static nro.server.Manager.player;
 
 public class SuperBroly extends Boss {
@@ -101,12 +102,11 @@ public class SuperBroly extends Boss {
         if (plKill == null) {
             return;
         }
-
-        if (plKill.Detu == null) {
-            DetuService.gI().createMabuPet(plKill);
-        } else {
-            DetuService.gI().changeMabuPet(plKill);
-        }
+        int x = this.location.x;
+        int y = this.zone.map.yPhysicInTop(x, this.location.y - 24);
+        
+        ItemMap it = new ItemMap(this.zone, 568, 1, x + Util.nextInt(-10, 10), y, plKill.id);
+        Service.gI().dropItemMap(this.zone, it);
     }
 
     @Override

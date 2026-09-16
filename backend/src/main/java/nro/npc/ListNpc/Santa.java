@@ -16,7 +16,6 @@ import models.Item.Item;
 import models.Item.ItemService;
 import nro.npc.Npc;
 import nro.player.Player;
-import nro.shop.BuyBack;
 import nro.shop.ShopService;
 
 public class Santa extends Npc {
@@ -67,15 +66,12 @@ public class Santa extends Npc {
                     "Cửa hàng",
                     "Mở rộng\nHành trang\nRương đồ",
                    "Nhập mã\nquà tặng",
+                   "Shop hạn\nsử dụng",
                     "Shop Vip",
                    "Tiệm\nHớt tóc",
                     "Danh\nhiệu",
                     "Kiểm tra\nGiao dịch\n1 ngọc"
             ));
-
-            if (!player.inventory.itemsDaBan.isEmpty()) {
-                menu.add(3, "Mua lại\nvật phẩm\nđã bán\n[" + player.inventory.itemsDaBan.size() + "/" + BuyBack.MAX_COUNT_IN_BOX + "]");
-            }
 
             String[] menus = menu.toArray(String[]::new);
 
@@ -155,11 +151,11 @@ public class Santa extends Npc {
                         case 1: // Mở rộng hành trang
                             ShopService.gI().opendShop(player, "SANTA_MO_RONG_HANH_TRANG", false);
                             break;
-                        case 2: // Cửa hàng hạn sử dụng
-                            ShopService.gI().opendShop(player, "SANTA_HAN_SU_DUNG", false);
-                            break;
-                        case 3: // Nhập mã quà tặng
+                        case 2: // Nhập mã quà tặng
                             Input.gI().createFormGiftCode(player);
+                            break;
+                        case 3: // Shop hạn sử dụng
+                            ShopService.gI().opendShop(player, "SANTA_HAN_SU_DUNG", false);
                             break;
                         case 4: // SHOP VIP
                             ShopService.gI().opendShop(player, "SHOP_NRO", false);
