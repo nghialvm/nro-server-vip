@@ -55,7 +55,7 @@ public class TrungUyXanhLo extends Boss {
             ItemMap it = new ItemMap(
                     this.zone,
                     Util.nextInt(14, 16),
-                    1,
+                    10,
                     this.location.x + Util.nextInt(-15, 15),
                     this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24),
                     plKill.id
@@ -67,7 +67,7 @@ public class TrungUyXanhLo extends Boss {
             ItemMap it = new ItemMap(
                     this.zone,
                     611,
-                    1,
+                    10,
                     this.location.x,
                     this.zone.map.yPhysicInTop(this.location.x, this.location.y),
                     plKill.id

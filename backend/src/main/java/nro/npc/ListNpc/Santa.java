@@ -66,8 +66,8 @@ public class Santa extends Npc {
                     "Cửa hàng",
                     "Mở rộng\nHành trang\nRương đồ",
                    "Nhập mã\nquà tặng",
-                   "Shop hạn\nsử dụng",
-                    "Shop Vip",
+                    "Shop hạn\nsử dụng",
+                    "Shop VIP",
                    "Tiệm\nHớt tóc",
                     "Danh\nhiệu",
                     "Kiểm tra\nGiao dịch\n1 ngọc"

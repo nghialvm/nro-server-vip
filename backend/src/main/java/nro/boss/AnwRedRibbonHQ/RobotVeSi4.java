@@ -46,7 +46,7 @@ public class RobotVeSi4 extends Boss {
             ItemMap it = new ItemMap(
                     this.zone,
                     Util.nextInt(14, 16),
-                    1,
+                    10,
                     this.location.x,
                     this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24),
                     plKill.id

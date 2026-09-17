@@ -53,7 +53,7 @@ public class TrungUyThep extends Boss {
             ItemMap it = new ItemMap(
                     this.zone,
                     Util.nextInt(14, 16),
-                    1,
+                    10,
                     this.location.x,
                     this.zone.map.yPhysicInTop(this.location.x, this.location.y - 24),
                     plKill.id
@@ -79,6 +79,18 @@ public class TrungUyThep extends Boss {
                     plKill.id
             );
             Service.gI().dropItemMap(this.zone, vang2);
+
+            if (Util.isTrue(70, 100)) {
+                ItemMap bdkb = new ItemMap(
+                        this.zone,
+                        611,
+                        10,
+                        this.location.x,
+                        this.zone.map.yPhysicInTop(this.location.x, this.location.y),
+                        plKill.id
+                );
+                Service.gI().dropItemMap(this.zone, bdkb);
+            }
         }
     }
 
