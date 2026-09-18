@@ -1155,17 +1155,43 @@ public class Service {
         DataGame.updateMap(pl.getSession());
     }
 
+    private long clampPowerReward(Player player, long param) {
+        if (player == null || player.nPoint == null || param <= 0) {
+            return 0;
+        }
+        long powerLimit = player.nPoint.getPowerLimit();
+        if (powerLimit <= 0) {
+            return param;
+        }
+        long remainingPower = powerLimit - player.nPoint.power;
+        if (remainingPower <= 0) {
+            return 0;
+        }
+        return Math.min(param, remainingPower);
+    }
+
     public void addSMTN(Player player, byte type, long param, boolean isOri) {
         long start = System.currentTimeMillis();
         if (player.isDeTu || player.isBo || player.isMe || player.isNguoiYeu || player.isConOne || player.isConTwo || player.isConThree) {
-            if (player.nPoint.power > player.nPoint.getPowerLimit()) {
+            if (player.nPoint == null || player.nPoint.power >= player.nPoint.getPowerLimit()) {
+                return;
+            }
+            param = clampPowerReward(player, param);
+            if (param <= 0) {
                 return;
             }
             long start2 = System.currentTimeMillis();
             player.nPoint.powerUp(Util.CrisGH(param));
             player.nPoint.tiemNangUp(Util.CrisGH(param));
             Player master = ((Detu) player).master;
+            if (master == null || master.nPoint == null) {
+                return;
+            }
             param = master.nPoint.calSubTNSM(param);
+            param = clampPowerReward(master, param);
+            if (param <= 0) {
+                return;
+            }
             long endCal = System.currentTimeMillis();
             if (endCal - start > 50) {
                 System.out.println("[SLOW] CALCULATOR POINT : " + (endCal - start) + " : " + (endCal - start2));
@@ -1186,8 +1212,18 @@ public class Service {
         //        }
         else {
 
-            if (player.nPoint == null || player.nPoint.power > player.nPoint.getPowerLimit()) {
+            if (player.nPoint == null || (player.nPoint.getPowerLimit() > 0
+                    && player.nPoint.power >= player.nPoint.getPowerLimit())) {
                 return;
+            }
+            if (param <= 0) {
+                return;
+            }
+            if (type != 1) {
+                param = clampPowerReward(player, param);
+                if (param <= 0) {
+                    return;
+                }
             }
             switch (type) {
                 case 1:

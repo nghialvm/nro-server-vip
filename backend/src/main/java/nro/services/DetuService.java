@@ -325,7 +325,7 @@ public class DetuService {
         new Thread(() -> {
             try {
                 createNewPet(player, false, true, false, false, false, (byte) 0);
-                player.Detu.nPoint.limitPower = NPoint.MAX_LIMIT;
+                player.Detu.nPoint.limitPower = NPoint.getMaxLimit();
                 player.Detu.nPoint.initPowerLimit();
                 Thread.sleep(1000);
                 Service.gI().chatJustForMe(player, player.Detu, "...");
@@ -339,7 +339,7 @@ public class DetuService {
         new Thread(() -> {
             try {
                 createNewPet(player, false, false, true, false,false, (byte) 1);
-                player.Detu.nPoint.limitPower = NPoint.MAX_LIMIT;
+                player.Detu.nPoint.limitPower = NPoint.getMaxLimit();
                 player.Detu.nPoint.initPowerLimit();
                 Thread.sleep(1000);
                 Service.gI().chatJustForMe(player, player.Detu, "...");
@@ -353,7 +353,7 @@ public class DetuService {
         new Thread(() -> {
             try {
                 createNewPet(player, false, false, false, true,false, (byte) 2);
-                player.Detu.nPoint.limitPower = NPoint.MAX_LIMIT;
+                player.Detu.nPoint.limitPower = NPoint.getMaxLimit();
                 player.Detu.nPoint.initPowerLimit();
                 Thread.sleep(1000);
                 Service.gI().chatJustForMe(player, player.Detu, "...");
@@ -366,7 +366,7 @@ public void createBlackPet(Player player) {
     new Thread(() -> {
         try {
             createNewPet(player, false, false, false, false, true, (byte) player.gender);
-            player.Detu.nPoint.limitPower = NPoint.MAX_LIMIT;
+            player.Detu.nPoint.limitPower = NPoint.getMaxLimit();
             player.Detu.nPoint.initPowerLimit();
             Thread.sleep(1000);
             Service.gI().chatJustForMe(player, player.Detu, "...");

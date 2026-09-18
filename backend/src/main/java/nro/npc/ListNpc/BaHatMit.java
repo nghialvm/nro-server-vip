@@ -74,7 +74,8 @@ public class BaHatMit extends Npc {
                             "Võ đài\nSinh Tử",
 //                            "Map địa\nngục",
                             "Nâng cấp đệ Tử",
-                            "Chức năng khác"
+                            "Chức năng khác",
+                            "Cửa hàng\nđá"
                     ));
 
                     if (EventManager.LUNNAR_NEW_YEAR) {
@@ -238,6 +239,9 @@ public class BaHatMit extends Npc {
                                     );
                                     break;
                                 case 5:
+                                    ShopService.gI().opendShop(player, "SHOP_BHM", false);
+                                    break;
+                                case 6:
                                     if (EventManager.LUNNAR_NEW_YEAR) {
                                         Item MamNguQua = InventoryService.gI().findItemBag(player, (short) 1182);
                                         if (MamNguQua == null) {
@@ -603,7 +607,8 @@ public class BaHatMit extends Npc {
                                         "Bùa\n1 giờ",
                                         "Bùa\n8 giờ",
                                         "Bùa\n1 tháng",
-                                        "Đóng");//"Bùa\nđệ tử",
+                                        "Bùa đệ tử",
+                                        "Đóng");
                                 break;
                             case 3:
                                 CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_VAT_PHAM);
@@ -687,9 +692,9 @@ public class BaHatMit extends Npc {
                             case 2:
                                 ShopService.gI().opendShop(player, "BUA_1M", false);
                                 break;
-//                            case 3:
-//                                ShopService.gI().opendShop(player, "BUA_DETU", false);
-//                                break;
+                            case 3:
+                                ShopService.gI().opendShop(player, "BUA_DETU", false);
+                                break;
                         }
                     } else if (player.iDMark.getIndexMenu() == ConstNpc.MENU_START_COMBINE) {
                         switch (player.combine.typeCombine) {

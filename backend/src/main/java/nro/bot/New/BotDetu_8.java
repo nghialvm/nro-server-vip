@@ -52,9 +52,9 @@ public class BotDetu_8 {
         }
         if (this.bot.Detu == null && this.bot.type == 7) {
             if (Util.isTrue(80, 100)) {
-                DetuService.gI().createNormalBot(this.bot, NPoint.MAX_LIMIT);
+                DetuService.gI().createNormalBot(this.bot, NPoint.getMaxLimit());
             } else {
-                DetuService.gI().createMabuBot(this.bot, NPoint.MAX_LIMIT);
+                DetuService.gI().createMabuBot(this.bot, NPoint.getMaxLimit());
             }
         }
         if (this.bot.Detu != null) {

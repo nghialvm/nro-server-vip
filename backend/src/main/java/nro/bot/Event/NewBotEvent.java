@@ -116,7 +116,7 @@ public class NewBotEvent {
             int id = Util.nextInt(1_000_000_000, 2_000_000_000);
             int flag = Util.nextInt(50, 150);
             BotEvent b = new BotEvent(id, (short) head,(short) body,(short) leg, type, Getname(), shop, shop2, shop3, shop4, shop5, (short) flag);
-            b.nPoint.limitPower = NPoint.MAX_LIMIT;
+            b.nPoint.limitPower = NPoint.getMaxLimit();
             switch (type) {
                 case 0:
                 case 1:

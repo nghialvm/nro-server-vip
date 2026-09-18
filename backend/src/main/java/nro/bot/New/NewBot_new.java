@@ -201,7 +201,7 @@ public class NewBot_new {
             b.detu_9 = detu_9;
             b.detu_10 = detu_10;
             b.detu_11 = detu_11;
-            b.nPoint.limitPower = NPoint.MAX_LIMIT;
+            b.nPoint.limitPower = NPoint.getMaxLimit();
             switch (type) {
                 case 0:
                 case 1:

@@ -38,8 +38,6 @@ import nro.power.PowerLimitManager;
 
 public class NPoint {
 
-    public static final byte MAX_LIMIT = 20;
-
     @Setter
     private Player player;
 
@@ -93,6 +91,11 @@ public class NPoint {
 
     public void initPowerLimit() {
         powerLimit = PowerLimitManager.getInstance().get(limitPower);
+    }
+
+    public static byte getMaxLimit() {
+        int maxLimit = PowerLimitManager.getInstance().getMaxId();
+        return (byte) Math.max(maxLimit, 0);
     }
 
     public List<Integer> tlSpeed;
@@ -2551,7 +2554,7 @@ if (hasFull5NhatAn()) {
         }
 
         if (power >= getPowerLimit()) {
-            return 10;
+            return 0;
         }
 
         long now = System.currentTimeMillis();
@@ -2794,7 +2797,7 @@ if (hasFull5NhatAn()) {
         tiemNang = calSubTNSM(tiemNang);
 
         if (tiemNang <= 0) {
-            tiemNang = 1;
+            return power < getPowerLimit() ? 1 : 0;
         }
 
         return tiemNang;
@@ -2847,27 +2850,29 @@ private boolean hasFull5NhatAn() {
         return player != null && (player.isPl() || player.isDeTu);
     }
 
-// Giảm exp theo mốc + giới hạn 20tr
+// Giảm exp theo tỷ lệ tnsm_rate trong power_limit + giới hạn 20tr
     public long calSubTNSM(long tiemNang) {
         if (power >= getPowerLimit()) {
             return 0;
         }
 
-        if (this.power >= 120_000_000_000L) {
-            tiemNang = calPercent(tiemNang, 1);   // giảm 99.9%
-        } else if (this.power >= 100_000_000_000L) {
-            tiemNang = calPercent(tiemNang, 1);   // giảm 99%
-        } else if (this.power >= 50_000_000_000L) {
-            tiemNang = calPercent(tiemNang, 20);  // giảm 80%
-        } else if (this.power >= 40_000_000_000L) {
-            tiemNang = calPercent(tiemNang, 50);  // giảm 50%
-        }
+        PowerLimit currentLimit = this.powerLimit != null
+                ? this.powerLimit
+                : PowerLimitManager.getInstance().get(this.limitPower);
+        int tnsmRate = currentLimit != null ? currentLimit.getTnsmRate() : 100;
+        tnsmRate = Math.max(1, Math.min(100, tnsmRate));
+        tiemNang = calPercent(tiemNang, tnsmRate);
 
         // Giới hạn tối đa 20 triệu
         if (tiemNang > 20_000_000L) {
             tiemNang = 20_000_000L;
         }
-        
+
+        long remainingPower = getPowerLimit() - power;
+        if (remainingPower <= 0) {
+            return 0;
+        }
+        tiemNang = Math.min(tiemNang, remainingPower);
 
         return tiemNang;
     }
@@ -2903,14 +2908,17 @@ private boolean hasFull5NhatAn() {
     }
 
     public long getPowerLimit() {
-        if (powerLimit != null) {
-            return powerLimit.getPower();
+        PowerLimit currentLimit = powerLimit != null
+                ? powerLimit
+                : PowerLimitManager.getInstance().get(limitPower);
+        if (currentLimit != null) {
+            return currentLimit.getPower();
         }
         return 0;
     }
 
     public long getPowerNextLimit() {
-        PowerLimit powerLimit = PowerLimitManager.getInstance().get(limitPower + 1);
+        PowerLimit powerLimit = PowerLimitManager.getInstance().getNext(limitPower);
         if (powerLimit != null) {
             return powerLimit.getPower();
         }

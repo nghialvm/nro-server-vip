@@ -20,6 +20,7 @@ public class PowerLimit {
     private long damage;
     private int defense;
     private int critical;
+    private int tnsmRate;
 }
 
 

@@ -195,7 +195,7 @@ public class NewBot {
             BotAttackMob mob = new BotAttackMob(b);
             b.mo1 = mob;
             b.boss = boss;
-            b.nPoint.limitPower = NPoint.MAX_LIMIT;
+            b.nPoint.limitPower = NPoint.getMaxLimit();
             switch (type) {
                 case 0:
                     int randomCase = Util.nextInt(0, 21);

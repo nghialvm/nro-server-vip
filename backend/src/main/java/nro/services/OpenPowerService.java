@@ -3,7 +3,6 @@ package nro.services;
 import Utils.FormatStyle;
 import Utils.Util;
 import models.Item.ItemTimeService;
-import nro.player.NPoint;
 import nro.player.Detu;
 import nro.player.Player;
 import nro.power.PowerLimit;
@@ -31,16 +30,12 @@ public class OpenPowerService {
             return false;
         }
         synchronized (player) {
-            if (player.nPoint.limitPower >= NPoint.MAX_LIMIT) {
+            PowerLimit nextLimit = getNextLimit(player);
+            if (nextLimit == null) {
                 sendToOwner(player, "Sức mạnh của bạn đã đạt tới mức tối đa");
                 return false;
             }
 
-            PowerLimit nextLimit = getNextLimit(player);
-            if (nextLimit == null) {
-                sendToOwner(player, "Dữ liệu giới hạn sức mạnh chưa được cập nhật đầy đủ");
-                return false;
-            }
             if (player.itemTime.isOpenPower) {
                 sendToOwner(player, "Bạn đang mở giới hạn sức mạnh, hãy chờ hoàn tất");
                 return false;
@@ -69,16 +64,12 @@ public class OpenPowerService {
             return false;
         }
         synchronized (player) {
-            if (player.nPoint.limitPower >= NPoint.MAX_LIMIT) {
+            PowerLimit nextLimit = getNextLimit(player);
+            if (nextLimit == null) {
                 sendToOwner(player, "Sức mạnh của bạn đã đạt tới mức tối đa");
                 return false;
             }
 
-            PowerLimit nextLimit = getNextLimit(player);
-            if (nextLimit == null) {
-                sendToOwner(player, "Dữ liệu giới hạn sức mạnh chưa được cập nhật đầy đủ");
-                return false;
-            }
             if (!player.nPoint.canOpenPower()) {
                 sendNotEnoughPower(player);
                 return false;
@@ -97,11 +88,11 @@ public class OpenPowerService {
     }
 
     private PowerLimit getNextLimit(Player player) {
-        return PowerLimitManager.getInstance().get(player.nPoint.limitPower + 1);
+        return PowerLimitManager.getInstance().getNext(player.nPoint.limitPower);
     }
 
     private void advanceLimit(Player player, PowerLimit nextLimit) {
-        player.nPoint.limitPower++;
+        player.nPoint.limitPower = (byte) nextLimit.getId();
         player.nPoint.powerLimit = nextLimit;
     }
 

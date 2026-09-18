@@ -15,8 +15,8 @@ import models.Item.Item;
 import models.Item.ItemService;
 import nro.boss.map.TrainingBoss.TrainningService;
 import nro.npc.Npc;
-import nro.player.NPoint;
 import nro.player.Player;
+import nro.power.PowerLimitManager;
 
 public class ToSuKaio extends Npc {
 
@@ -144,12 +144,12 @@ public class ToSuKaio extends Npc {
                 if (player.Detu != null) {
                     switch (select) {
                         case 0:
-                            if (player.nPoint.limitPower < NPoint.MAX_LIMIT) {
+                            if (PowerLimitManager.getInstance().hasNext(player.nPoint.limitPower)) {
                                 this.createOtherMenu(player, ConstNpc.NANG_GIOI_HAN_POWER,
                                         "Ta sẽ truyền năng lượng giúp con mở giới hạn sức mạnh \n"
                                         + "của bản thân lên " + Service.gI().getPowerLimitDisplay(player) + ".\n"
                                         + "Điều kiện: đạt " + Util.formatNumber(player.nPoint.getPowerLimit(), FormatStyle.VIETNAMESE) + " sức mạnh.\n"
-                                        + "Lưu ý: từ 40 tỷ trở lên sức mạnh của con sẽ tăng chậm đáng kể",
+                                        + "Lưu ý: tỷ lệ tiền năng giảm dần theo từng mốc giới hạn sức mạnh",
                                         "Nâng\ngiới hạn\nsức mạnh",
                                         "Nâng ngay\n" + 199 + " ngọc", "OK");
                             } else {
@@ -160,12 +160,12 @@ public class ToSuKaio extends Npc {
                             break;
                         case 1:
                             if (player.Detu != null) {
-                                if (player.Detu.nPoint.limitPower < NPoint.MAX_LIMIT) {
+                                if (PowerLimitManager.getInstance().hasNext(player.Detu.nPoint.limitPower)) {
                                     this.createOtherMenu(player, ConstNpc.NANG_GIOI_HAN_POWER_PET,
                                             "Ta sẽ truyền năng lượng giúp con mở giới hạn sức mạnh \n"
                                             + "của đệ tử lên " + Service.gI().getPowerLimitDisplay(player.Detu) + ".\n"
                                             + "Điều kiện: đạt " + Util.formatNumber(player.Detu.nPoint.getPowerLimit(), FormatStyle.VIETNAMESE) + " sức mạnh.\n"
-                                            + "Lưu ý: từ 40 tỷ trở lên sức mạnh của đệ tử sẽ tăng chậm đáng kể",
+                                            + "Lưu ý: tỷ lệ tiền năng giảm dần theo từng mốc giới hạn sức mạnh",
                                             "Nâng ngay\ncho đệ tử\n" + 199 + " ngọc", "OK");
                                 } else {
                                     this.createOtherMenu(player, ConstNpc.IGNORE_MENU,
@@ -180,12 +180,12 @@ public class ToSuKaio extends Npc {
                 } else {
                     switch (select) {
                         case 0:
-                            if (player.nPoint.limitPower < NPoint.MAX_LIMIT) {
+                            if (PowerLimitManager.getInstance().hasNext(player.nPoint.limitPower)) {
                                 this.createOtherMenu(player, ConstNpc.NANG_GIOI_HAN_POWER,
                                         "Ta sẽ truyền năng lượng giúp con mở giới hạn sức mạnh \n"
                                         + "của bản thân lên " + Service.gI().getPowerLimitDisplay(player) + ".\n"
                                         + "Điều kiện: đạt " + Util.formatNumber(player.nPoint.getPowerLimit(), FormatStyle.VIETNAMESE) + " sức mạnh.\n"
-                                        + "Lưu ý: từ 40 tỷ trở lên sức mạnh của con sẽ tăng chậm đáng kể",
+                                        + "Lưu ý: tỷ lệ tiền năng giảm dần theo từng mốc giới hạn sức mạnh",
                                         "Nâng\ngiới hạn\nsức mạnh",
                                         "Nâng ngay\n" + 199 + " ngọc", "OK");
                             } else {

@@ -31,7 +31,7 @@ public class PowerLimitManager {
         List<PowerLimit> loaded = new ArrayList<>();
         try (Connection con = ConnectDB.getConnection();
                 PreparedStatement ps = con.prepareStatement(
-                        "SELECT id, power, hp, mp, damage, defense, critical FROM power_limit ORDER BY id ASC");
+                        "SELECT id, power, hp, mp, damage, defense, critical, tnsm_rate FROM power_limit ORDER BY id ASC");
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 int id = rs.getInt("id");
@@ -41,6 +41,7 @@ public class PowerLimitManager {
                 long damage = rs.getLong("damage");
                 int defense = rs.getInt("defense");
                 int critical = rs.getInt("critical");
+                int tnsmRate = rs.getInt("tnsm_rate");
                 PowerLimit powerLimit = PowerLimit.builder()
                         .id(id)
                         .power(power)
@@ -49,6 +50,7 @@ public class PowerLimitManager {
                         .damage(damage)
                         .defense(defense)
                         .critical(critical)
+                        .tnsmRate(tnsmRate)
                         .build();
                 loaded.add(powerLimit);
             }
@@ -87,6 +89,31 @@ public class PowerLimitManager {
             }
         }
         return null;
+    }
+
+    public PowerLimit getNext(int currentId) {
+        List<PowerLimit> snapshot = powers;
+        if (snapshot == null) {
+            return null;
+        }
+        for (PowerLimit powerLimit : snapshot) {
+            if (powerLimit != null && powerLimit.getId() > currentId) {
+                return powerLimit;
+            }
+        }
+        return null;
+    }
+
+    public boolean hasNext(int currentId) {
+        return getNext(currentId) != null;
+    }
+
+    public int getMaxId() {
+        List<PowerLimit> snapshot = powers;
+        if (snapshot == null || snapshot.isEmpty()) {
+            return -1;
+        }
+        return snapshot.get(snapshot.size() - 1).getId();
     }
 }
 

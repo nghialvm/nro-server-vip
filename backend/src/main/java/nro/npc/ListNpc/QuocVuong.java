@@ -8,8 +8,8 @@ import Utils.FormatStyle;
 import Utils.Util;
 import consts.ConstNpc;
 import nro.npc.Npc;
-import nro.player.NPoint;
 import nro.player.Player;
+import nro.power.PowerLimitManager;
 
 public class QuocVuong extends Npc {
 
@@ -40,12 +40,12 @@ public class QuocVuong extends Npc {
                 if (player.Detu != null) {
                     switch (select) {
                         case 0:
-                            if (player.nPoint.limitPower < NPoint.MAX_LIMIT) {
+                            if (PowerLimitManager.getInstance().hasNext(player.nPoint.limitPower)) {
                                 this.createOtherMenu(player, ConstNpc.OPEN_POWER_MYSEFT,
                                         "Ta sẽ truyền năng lượng giúp con mở giới hạn sức mạnh \n"
                                         + "của bản thân lên " + Service.gI().getPowerLimitDisplay(player) + ".\n"
                                         + "Điều kiện: đạt " + Util.formatNumber(player.nPoint.getPowerLimit(), FormatStyle.VIETNAMESE) + " sức mạnh.\n"
-                                        + "Lưu ý: từ 40 tỷ trở lên sức mạnh của con sẽ tăng chậm đáng kể",
+                                        + "Lưu ý: tỷ lệ tiền năng giảm dần theo từng mốc giới hạn sức mạnh",
                                         "Nâng\ngiới hạn\nsức mạnh",
                                         "Nâng ngay\n" + Util.formatNumber(GOLD_SPEED_OPEN_LIMIT_POWER, FormatStyle.VIETNAMESE) + " vàng",
                                         "OK");
@@ -58,12 +58,12 @@ public class QuocVuong extends Npc {
 
                         case 1:
                             if (player.Detu != null) {
-                                if (player.Detu.nPoint.limitPower < NPoint.MAX_LIMIT) {
+                                if (PowerLimitManager.getInstance().hasNext(player.Detu.nPoint.limitPower)) {
                                     this.createOtherMenu(player, ConstNpc.OPEN_POWER_PET,
                                             "Ta sẽ truyền năng lượng giúp con mở giới hạn sức mạnh \n"
                                             + "của đệ tử lên " + Service.gI().getPowerLimitDisplay(player.Detu) + ".\n"
                                             + "Điều kiện: đạt " + Util.formatNumber(player.Detu.nPoint.getPowerLimit(), FormatStyle.VIETNAMESE) + " sức mạnh.\n"
-                                            + "Lưu ý: từ 40 tỷ trở lên sức mạnh của đệ tử sẽ tăng chậm đáng kể",
+                                            + "Lưu ý: tỷ lệ tiền năng giảm dần theo từng mốc giới hạn sức mạnh",
                                             "Nâng ngay\ncho đệ tử\n" + Util.formatNumber(GOLD_SPEED_OPEN_LIMIT_POWER, FormatStyle.VIETNAMESE) + " vàng",
                                             "OK");
                                 } else {
@@ -79,12 +79,12 @@ public class QuocVuong extends Npc {
                 } else {
                     switch (select) {
                         case 0:
-                            if (player.nPoint.limitPower < NPoint.MAX_LIMIT) {
+                            if (PowerLimitManager.getInstance().hasNext(player.nPoint.limitPower)) {
                                 this.createOtherMenu(player, ConstNpc.OPEN_POWER_MYSEFT,
                                         "Ta sẽ truyền năng lượng giúp con mở giới hạn sức mạnh \n"
                                         + "của bản thân lên " + Service.gI().getPowerLimitDisplay(player) + ".\n"
                                         + "Điều kiện: đạt " + Util.formatNumber(player.nPoint.getPowerLimit(), FormatStyle.VIETNAMESE) + " sức mạnh.\n"
-                                        + "Lưu ý: từ 40 tỷ trở lên sức mạnh của con sẽ tăng chậm đáng kể",
+                                        + "Lưu ý: tỷ lệ tiền năng giảm dần theo từng mốc giới hạn sức mạnh",
                                         "Nâng\ngiới hạn\nsức mạnh",
                                         "Nâng ngay\n" + Util.formatNumber(GOLD_SPEED_OPEN_LIMIT_POWER, FormatStyle.VIETNAMESE) + " vàng",
                                         "OK");
