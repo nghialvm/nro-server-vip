@@ -87,7 +87,7 @@ SET @gem_stone_tab_id = (
 
 INSERT INTO `item_shop`
     (`tab_id`, `temp_id`, `is_new`, `is_sell`, `type_sell`, `cost`, `costgold`, `icon_spec`, `create_time`)
-SELECT @upgrade_stone_tab_id, 1074, 0, 1, 3, 500, 0, 7743, CURRENT_TIMESTAMP
+SELECT @upgrade_stone_tab_id, 1074, 0, 1, 0, 500, 0, 4028, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
     SELECT 1 FROM `item_shop`
     WHERE `tab_id` = @upgrade_stone_tab_id AND `temp_id` = 1074
@@ -95,7 +95,7 @@ WHERE NOT EXISTS (
 
 INSERT INTO `item_shop`
     (`tab_id`, `temp_id`, `is_new`, `is_sell`, `type_sell`, `cost`, `costgold`, `icon_spec`, `create_time`)
-SELECT @upgrade_stone_tab_id, 1075, 0, 1, 3, 700, 0, 7743, CURRENT_TIMESTAMP
+SELECT @upgrade_stone_tab_id, 1075, 0, 1, 0, 700, 0, 4028, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
     SELECT 1 FROM `item_shop`
     WHERE `tab_id` = @upgrade_stone_tab_id AND `temp_id` = 1075
@@ -103,7 +103,7 @@ WHERE NOT EXISTS (
 
 INSERT INTO `item_shop`
     (`tab_id`, `temp_id`, `is_new`, `is_sell`, `type_sell`, `cost`, `costgold`, `icon_spec`, `create_time`)
-SELECT @upgrade_stone_tab_id, 1076, 0, 1, 3, 900, 0, 7743, CURRENT_TIMESTAMP
+SELECT @upgrade_stone_tab_id, 1076, 0, 1, 0, 900, 0, 4028, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
     SELECT 1 FROM `item_shop`
     WHERE `tab_id` = @upgrade_stone_tab_id AND `temp_id` = 1076
@@ -111,7 +111,7 @@ WHERE NOT EXISTS (
 
 INSERT INTO `item_shop`
     (`tab_id`, `temp_id`, `is_new`, `is_sell`, `type_sell`, `cost`, `costgold`, `icon_spec`, `create_time`)
-SELECT @upgrade_stone_tab_id, 1077, 0, 1, 3, 1200, 0, 7743, CURRENT_TIMESTAMP
+SELECT @upgrade_stone_tab_id, 1077, 0, 1, 0, 1200, 0, 4028, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
     SELECT 1 FROM `item_shop`
     WHERE `tab_id` = @upgrade_stone_tab_id AND `temp_id` = 1077
@@ -119,7 +119,7 @@ WHERE NOT EXISTS (
 
 INSERT INTO `item_shop`
     (`tab_id`, `temp_id`, `is_new`, `is_sell`, `type_sell`, `cost`, `costgold`, `icon_spec`, `create_time`)
-SELECT @upgrade_stone_tab_id, 1078, 0, 1, 3, 1500, 0, 7743, CURRENT_TIMESTAMP
+SELECT @upgrade_stone_tab_id, 1078, 0, 1, 0, 1500, 0, 4028, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
     SELECT 1 FROM `item_shop`
     WHERE `tab_id` = @upgrade_stone_tab_id AND `temp_id` = 1078
@@ -127,7 +127,7 @@ WHERE NOT EXISTS (
 
 INSERT INTO `item_shop`
     (`tab_id`, `temp_id`, `is_new`, `is_sell`, `type_sell`, `cost`, `costgold`, `icon_spec`, `create_time`)
-SELECT @gem_stone_tab_id, 220, 0, 1, 3, 250, 0, 7743, CURRENT_TIMESTAMP
+SELECT @gem_stone_tab_id, 220, 0, 1, 0, 1, 0, 4028, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
     SELECT 1 FROM `item_shop`
     WHERE `tab_id` = @gem_stone_tab_id AND `temp_id` = 220
@@ -135,7 +135,7 @@ WHERE NOT EXISTS (
 
 INSERT INTO `item_shop`
     (`tab_id`, `temp_id`, `is_new`, `is_sell`, `type_sell`, `cost`, `costgold`, `icon_spec`, `create_time`)
-SELECT @gem_stone_tab_id, 221, 0, 1, 3, 250, 0, 7743, CURRENT_TIMESTAMP
+SELECT @gem_stone_tab_id, 221, 0, 1, 0, 1, 0, 4028, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
     SELECT 1 FROM `item_shop`
     WHERE `tab_id` = @gem_stone_tab_id AND `temp_id` = 221
@@ -143,7 +143,7 @@ WHERE NOT EXISTS (
 
 INSERT INTO `item_shop`
     (`tab_id`, `temp_id`, `is_new`, `is_sell`, `type_sell`, `cost`, `costgold`, `icon_spec`, `create_time`)
-SELECT @gem_stone_tab_id, 222, 0, 1, 3, 250, 0, 7743, CURRENT_TIMESTAMP
+SELECT @gem_stone_tab_id, 222, 0, 1, 0, 1, 0, 4028, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
     SELECT 1 FROM `item_shop`
     WHERE `tab_id` = @gem_stone_tab_id AND `temp_id` = 222
@@ -151,7 +151,7 @@ WHERE NOT EXISTS (
 
 INSERT INTO `item_shop`
     (`tab_id`, `temp_id`, `is_new`, `is_sell`, `type_sell`, `cost`, `costgold`, `icon_spec`, `create_time`)
-SELECT @gem_stone_tab_id, 223, 0, 1, 3, 250, 0, 7743, CURRENT_TIMESTAMP
+SELECT @gem_stone_tab_id, 223, 0, 1, 0, 1, 0, 4028, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
     SELECT 1 FROM `item_shop`
     WHERE `tab_id` = @gem_stone_tab_id AND `temp_id` = 223
@@ -159,7 +159,7 @@ WHERE NOT EXISTS (
 
 INSERT INTO `item_shop`
     (`tab_id`, `temp_id`, `is_new`, `is_sell`, `type_sell`, `cost`, `costgold`, `icon_spec`, `create_time`)
-SELECT @gem_stone_tab_id, 224, 0, 1, 3, 250, 0, 7743, CURRENT_TIMESTAMP
+SELECT @gem_stone_tab_id, 224, 0, 1, 0, 1, 0, 4028, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (
     SELECT 1 FROM `item_shop`
     WHERE `tab_id` = @gem_stone_tab_id AND `temp_id` = 224
