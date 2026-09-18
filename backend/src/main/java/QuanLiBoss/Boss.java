@@ -482,6 +482,34 @@ public class Boss extends Player implements IBoss {
         }
     }
 
+    private int getCycleRestSeconds() {
+        if (this.data == null || this.data.length == 0) {
+            return this.secondsRest;
+        }
+        for (BossData levelData : this.data) {
+            if (levelData != null && levelData.getTypeAppear() == TypeAppear.DEFAULT_APPEAR) {
+                return levelData.getSecondsRest();
+            }
+        }
+        return this.data[0].getSecondsRest();
+    }
+
+    private boolean isCycleEndAfterCurrentLevel() {
+        if (this.data == null || this.data.length == 0) {
+            return true;
+        }
+        int nextLevel = this.currentLevel + 1;
+        if (nextLevel >= this.data.length) {
+            nextLevel = 0;
+        }
+        BossData nextLevelData = this.data[nextLevel];
+        return nextLevelData == null || nextLevelData.getTypeAppear() == TypeAppear.DEFAULT_APPEAR;
+    }
+
+    private void prepareRestAfterDeath() {
+        this.secondsRest = isCycleEndAfterCurrentLevel() ? getCycleRestSeconds() : 0;
+    }
+
     @Override
     public void afk() {
 
@@ -883,6 +911,7 @@ public void die(Player plKill) {
         this.playerReward = killer;
     }
     this.lastTimeRest = System.currentTimeMillis();
+    this.prepareRestAfterDeath();
 
     if (killer != null) {
         reward(killer);
@@ -935,6 +964,7 @@ public void die(Player plKill) {
         } else {
             ChangeMapService.gI().exitMap(this);
             this.lastZone = null;
+            this.secondsRest = getCycleRestSeconds();
             // DON'T reset lastTimeRest here - it was set at death time and should be preserved for respawn countdown
             this.changeStatus(BossStatus.REST);
         }
@@ -985,6 +1015,7 @@ protected void autoResetBossBecauseNoHunter() {
     // ANOTHER_LEVEL entry (for example Fide and Black Goku).
     this.currentLevel = this.data.length;
     try {
+        this.secondsRest = getCycleRestSeconds();
         if (this.zone != null && canSendNotify()) {
             ServerNotify.gI().notify("BOSS " + this.name + " vừa  " + this.zone.map.mapName);
         }
@@ -998,6 +1029,7 @@ protected void autoResetBossBecauseNoHunter() {
         this.hasPlayerAttackSinceSpawn = false;
         this.changeStatus(BossStatus.REST);
     } catch (Exception e) {
+        this.secondsRest = getCycleRestSeconds();
         this.lastTimeRest = System.currentTimeMillis();
         this.lastTimeBossSpawn = 0;
         this.lastTimePlayerAttack = 0;
