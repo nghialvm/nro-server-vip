@@ -240,11 +240,10 @@ public class TimeUtil {
 //    }
 
     public static boolean isMabuOpen() {
-        Calendar calendar = Calendar.getInstance();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        // Mở từ 12h00 -> 13h00 hằng ngày
+        // Chuỗi nhiệm vụ Mabu 12H được mở cả ngày.
+        // Giữ lại giá trị cũ để các thông báo/luồng tương thích không bị ảnh hưởng.
         MajinBuu12H.HOUR_OPEN_MAP_MABU = 12;
-        return (hour >= 12 && hour < 13);
+        return true;
     }
 
     public static boolean isOpenWeekend() {

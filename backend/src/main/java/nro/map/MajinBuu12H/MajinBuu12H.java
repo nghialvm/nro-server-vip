@@ -7,7 +7,6 @@ import nro.services.Fun.ChangeMapService;
 import nro.services.MapService;
 import nro.services.NpcService;
 import nro.services.Service;
-import Utils.TimeUtil;
 import Utils.Util;
 import consts.ConstNpc;
 import java.util.List;
@@ -116,14 +115,6 @@ public class MajinBuu12H {
         if (player.zone != null && player.isPl() && MapService.gI().isMapMaBu12H(player.zone.map.mapId)) {
             try {
                 goHome(player);
-
-                if (!TimeUtil.isMabuOpen()) {
-                    if (!player.goHome && !player.isFounder()) {
-                        player.goHome = true;
-                        player.timeGohome = 30;
-                    }
-                    return;
-                }
 
                 if (Util.isTrue(1, 100) && player.cFlag == 9) {
                     getNpcBabiday(player).npcChat(player.zone, "Úm ba la xì bùa " + player.name);

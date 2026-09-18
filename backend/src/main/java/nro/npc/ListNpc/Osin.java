@@ -11,7 +11,6 @@ import Utils.Util;
 import consts.ConstNpc;
 import java.util.ArrayList;
 import models.Item.ItemTimeService;
-import nro.map.MajinBuu12H.MajinBuu12H;
 import nro.map.MajinBuu14H.MajinBuu14HService;
 import nro.npc.Npc;
 import nro.player.Player;
@@ -52,15 +51,12 @@ public class Osin extends Npc {
                     player.fightMabu.clear();
                     if (this.mapId == 52) {
                         if (TimeUtil.isMabu14HOpen()) {
-                            this.createOtherMenu(player, ConstNpc.MENU_OPEN_MMB, "Mabư đã thoát khỏi vỏ bọc\nmau đi cùng ta ngăn chặn hắn lại\ntrước khi hắn tàn phá trái đất này",
-                                    "OK", "Bình hút\nnăng lượng", "Từ chối");
-                        } else if (TimeUtil.isMabuOpen()) {
-                            this.createOtherMenu(player, ConstNpc.MENU_OPEN_MMB, "Bây giờ tôi sẽ bí mật...\nđuổi theo 2 tên đồ tể...\nQuý vị nào muốn đi theo thì xin mời !",
-                                    "OK", "Bình hút\nnăng lượng", "Từ chối");
+                            this.createOtherMenu(player, ConstNpc.MENU_OPEN_MMB_BOTH,
+                                    "Mabư đã thoát khỏi vỏ bọc\nmau đi cùng ta ngăn chặn hắn lại\ntrước khi hắn tàn phá trái đất này",
+                                    "Đến Mabư\n14H", "Vào nhiệm vụ\nMabư", "Bình hút\nnăng lượng", "Từ chối");
                         } else {
-                            this.createOtherMenu(player, ConstNpc.MENU_NOT_OPEN_MMB,
-                                    "Vào lúc " + MajinBuu12H.HOUR_OPEN_MAP_MABU + "h tôi sẽ bí mật...\nđuổi theo 2 tên đồ tể...\nQuý vị nào muốn đi theo thì xin mời !", 
-                                    "OK", "Bình hút\nnăng lượng", "Từ chối");
+                            this.createOtherMenu(player, ConstNpc.MENU_OPEN_MMB, "Bây giờ tôi sẽ bí mật...\nđuổi theo 2 tên đồ tể...\nQuý vị nào muốn đi theo thì xin mời !",
+                                    "Vào nhiệm vụ\nMabư", "Bình hút\nnăng lượng", "Từ chối");
                         }
                     }
                     break;
@@ -170,17 +166,31 @@ public class Osin extends Npc {
                     switch (player.iDMark.getIndexMenu()) {
                         case ConstNpc.MENU_OPEN_MMB: {
                             if (select == 0) {
-                                if (TimeUtil.isMabu14HOpen()) {
-                                    MajinBuu14HService.gI().joinMaBu2H(player);
-                                } else if (TimeUtil.isMabuOpen()) {
-                                    ChangeMapService.gI().changeMap(player, 114, -1, Util.nextInt(100, 500), 336);
-                                }
+                                ChangeMapService.gI().changeMap(player, 114, -1, Util.nextInt(100, 500), 336);
                             }
                             if (select == 1) {
                                 this.createOtherMenu(player, 123412,
                                         "Cađíc đã bị phù thuỷ Babidi thôi miên\n"
                                         + "Hãy mang Bình Hút Năng Lượng đến\n"
                                         + "Hút cạn năng lượng tà ác trong cậu ấy", 
+                                        "OK", "Từ chối");
+                            }
+                            break;
+                        }
+                        case ConstNpc.MENU_OPEN_MMB_BOTH: {
+                            if (select == 0) {
+                                if (TimeUtil.isMabu14HOpen()) {
+                                    MajinBuu14HService.gI().joinMaBu2H(player);
+                                } else {
+                                    Service.gI().sendThongBao(player, "Sự kiện Mabư 14H đã kết thúc");
+                                }
+                            } else if (select == 1) {
+                                ChangeMapService.gI().changeMap(player, 114, -1, Util.nextInt(100, 500), 336);
+                            } else if (select == 2) {
+                                this.createOtherMenu(player, 123412,
+                                        "Cađíc đã bị phù thuỷ Babidi thôi miên\n"
+                                        + "Hãy mang Bình Hút Năng Lượng đến\n"
+                                        + "Hút cạn năng lượng tà ác trong cậu ấy",
                                         "OK", "Từ chối");
                             }
                             break;

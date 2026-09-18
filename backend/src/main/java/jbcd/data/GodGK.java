@@ -444,7 +444,7 @@ public class GodGK {
                 player.location.y = Integer.parseInt(String.valueOf(dataArray.get(2)));
                 player.location.lastTimeplayerMove = System.currentTimeMillis();
                 if (mapId == 51 || MapService.gI().isMapPhoBan(mapId) || MapService.gI().isMapBlackBallWar(mapId) || MapService.gI().isMapTayKarin(mapId)
-                        || MapService.gI().isMapMaBu12H(mapId) || MapService.gI().isMapMabu14H(mapId)) {
+                        || MapService.gI().isMapMabu14H(mapId)) {
                     mapId = player.gender + 21;
                     player.location.x = 300;
                     player.location.y = 336;

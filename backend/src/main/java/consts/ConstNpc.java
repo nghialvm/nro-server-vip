@@ -423,6 +423,7 @@ public class ConstNpc {
     public static final int MENU_NOT_OPEN_MMB = 500;
     public static final int MENU_OPEN_MMB = 501;
     public static final int MENU_REWARD_MMB = 502;
+    public static final int MENU_OPEN_MMB_BOTH = 503;
 
     //index menu rồng sao đen
     public static final int MENU_PHU_HP = 500;
