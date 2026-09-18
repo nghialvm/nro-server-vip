@@ -3,6 +3,7 @@ package jbcd.data;
 import nro.card.Card;
 import nro.card.OptionCard;
 import consts.ConstPlayer;
+import consts.ConstDetu;
 import Data.DataGame;
 import nro.clan.Clan;
 import nro.clan.ClanMember;
@@ -1691,7 +1692,8 @@ public class GodGK {
                 }
                 //data chỉ số
                 dataArray = (JSONArray) JSONValue.parse(String.valueOf(petData.get(1)));
-                pet.nPoint.limitPower = Byte.parseByte(String.valueOf(dataArray.get(0)));
+                pet.nPoint.limitPower = ConstDetu.normalizeSpecialPetLimit(
+                        pet.typeDeTu, Byte.parseByte(String.valueOf(dataArray.get(0))));
                 pet.nPoint.power = Long.parseLong(String.valueOf(dataArray.get(1)));
                 pet.nPoint.tiemNang = Long.parseLong(String.valueOf(dataArray.get(2)));
                 pet.nPoint.stamina = Short.parseShort(String.valueOf(dataArray.get(3)));
