@@ -43,7 +43,8 @@ public class QuocVuong extends Npc {
                             if (player.nPoint.limitPower < NPoint.MAX_LIMIT) {
                                 this.createOtherMenu(player, ConstNpc.OPEN_POWER_MYSEFT,
                                         "Ta sẽ truyền năng lượng giúp con mở giới hạn sức mạnh \n"
-                                        + "của bản thân lên " + Util.formatNumber(player.nPoint.getPowerNextLimit(), FormatStyle.VIETNAMESE) + ".\n"
+                                        + "của bản thân lên " + Service.gI().getPowerLimitDisplay(player) + ".\n"
+                                        + "Điều kiện: đạt " + Util.formatNumber(player.nPoint.getPowerLimit(), FormatStyle.VIETNAMESE) + " sức mạnh.\n"
                                         + "Lưu ý: từ 40 tỷ trở lên sức mạnh của con sẽ tăng chậm đáng kể",
                                         "Nâng\ngiới hạn\nsức mạnh",
                                         "Nâng ngay\n" + Util.formatNumber(GOLD_SPEED_OPEN_LIMIT_POWER, FormatStyle.VIETNAMESE) + " vàng",
@@ -60,7 +61,8 @@ public class QuocVuong extends Npc {
                                 if (player.Detu.nPoint.limitPower < NPoint.MAX_LIMIT) {
                                     this.createOtherMenu(player, ConstNpc.OPEN_POWER_PET,
                                             "Ta sẽ truyền năng lượng giúp con mở giới hạn sức mạnh \n"
-                                            + "của đệ tử lên " + Util.formatNumber(player.Detu.nPoint.getPowerNextLimit(), FormatStyle.VIETNAMESE) + ".\n"
+                                            + "của đệ tử lên " + Service.gI().getPowerLimitDisplay(player.Detu) + ".\n"
+                                            + "Điều kiện: đạt " + Util.formatNumber(player.Detu.nPoint.getPowerLimit(), FormatStyle.VIETNAMESE) + " sức mạnh.\n"
                                             + "Lưu ý: từ 40 tỷ trở lên sức mạnh của đệ tử sẽ tăng chậm đáng kể",
                                             "Nâng ngay\ncho đệ tử\n" + Util.formatNumber(GOLD_SPEED_OPEN_LIMIT_POWER, FormatStyle.VIETNAMESE) + " vàng",
                                             "OK");
@@ -80,7 +82,8 @@ public class QuocVuong extends Npc {
                             if (player.nPoint.limitPower < NPoint.MAX_LIMIT) {
                                 this.createOtherMenu(player, ConstNpc.OPEN_POWER_MYSEFT,
                                         "Ta sẽ truyền năng lượng giúp con mở giới hạn sức mạnh \n"
-                                        + "của bản thân lên " + Util.formatNumber(player.nPoint.getPowerNextLimit(), FormatStyle.VIETNAMESE) + ".\n"
+                                        + "của bản thân lên " + Service.gI().getPowerLimitDisplay(player) + ".\n"
+                                        + "Điều kiện: đạt " + Util.formatNumber(player.nPoint.getPowerLimit(), FormatStyle.VIETNAMESE) + " sức mạnh.\n"
                                         + "Lưu ý: từ 40 tỷ trở lên sức mạnh của con sẽ tăng chậm đáng kể",
                                         "Nâng\ngiới hạn\nsức mạnh",
                                         "Nâng ngay\n" + Util.formatNumber(GOLD_SPEED_OPEN_LIMIT_POWER, FormatStyle.VIETNAMESE) + " vàng",

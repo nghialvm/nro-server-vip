@@ -38,7 +38,7 @@ import nro.power.PowerLimitManager;
 
 public class NPoint {
 
-    public static final byte MAX_LIMIT = 13;
+    public static final byte MAX_LIMIT = 20;
 
     @Setter
     private Player player;
@@ -2899,7 +2899,7 @@ private boolean hasFull5NhatAn() {
 
     /*------------------------------------------------------------------------*/
     public boolean canOpenPower() {
-        return this.power >= getPowerLimit();
+        return this.powerLimit != null && this.power >= this.powerLimit.getPower();
     }
 
     public long getPowerLimit() {

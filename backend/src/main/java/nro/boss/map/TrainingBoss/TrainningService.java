@@ -19,7 +19,7 @@ public class TrainningService {
 
     private static TrainningService instance;
 
-    private static final long POWER_LIMIT = 180_000_000_000L; // 180 tỷ
+    private static final long POWER_LIMIT = 1_000_000_000_000L; // 1.000 tỷ
 
     public static TrainningService gI() {
         if (instance == null) {
@@ -132,9 +132,9 @@ public class TrainningService {
 
     public void tangTnsmLuyenTap(Player player, long tnsm) {
         if (player.isPl()) {
-            // Chặn nếu quá 180 tỷ
+            // Chặn nếu đã đạt 1.000 tỷ
             if (player.nPoint != null && player.nPoint.power >= POWER_LIMIT) {
-                Service.gI().sendThongBao(player, "Bạn đã đạt 180 tỷ sức mạnh, luyện tập không còn tác dụng!");
+                Service.gI().sendThongBao(player, "Bạn đã đạt 1.000 tỷ sức mạnh, luyện tập không còn tác dụng!");
                 return;
             }
 
@@ -153,9 +153,9 @@ public class TrainningService {
         if (time > 60) {
             tnsm = ((long) getTnsmMoiPhut(player) * (long) ((time > 86400 ? 86400 : time)) / 60);
 
-            // Chặn nếu quá 180 tỷ
+            // Chặn nếu đã đạt 1.000 tỷ
 //            if (player.nPoint != null && player.nPoint.power >= POWER_LIMIT) {
-//                Service.gI().sendThongBao(player, "Bạn đã đạt 180 tỷ sức mạnh, không thể nhận luyện tập Offline!");
+//                Service.gI().sendThongBao(player, "Bạn đã đạt 1.000 tỷ sức mạnh, không thể nhận luyện tập Offline!");
 //                return;
 //            }
 
@@ -179,9 +179,9 @@ public class TrainningService {
                             player.lastZoneOffline = player.zone.zoneId;
                             player.lastXOffline = player.location.x;
 
-                            // Chặn nếu quá 180 tỷ
+                            // Chặn nếu đã đạt 1.000 tỷ
                             if (player.nPoint != null && player.nPoint.power >= POWER_LIMIT) {
-                                Service.gI().sendThongBao(player, "Bạn đã đạt 180 tỷ sức mạnh, tự động tập luyện dừng lại!");
+                                Service.gI().sendThongBao(player, "Bạn đã đạt 1.000 tỷ sức mạnh, tự động tập luyện dừng lại!");
                                 return;
                             }
 

@@ -1,7 +1,6 @@
 package models.Item;
 
 import nro.effect.EffectSkillService;
-import nro.player.NPoint;
 import nro.player.Player;
 import nro.services.Service;
 import Utils.Util;
@@ -793,12 +792,9 @@ public class ItemTime {
         }
         if (isOpenPower) {
             if (Util.canDoWithTime(lastTimeOpenPower, TIME_OPEN_POWER)) {
-                player.nPoint.limitPower++;
-                if (player.nPoint.limitPower > NPoint.MAX_LIMIT) {
-                    player.nPoint.limitPower = NPoint.MAX_LIMIT;
-                }
-                player.nPoint.initPowerLimit();
-                Service.gI().sendThongBao(player, "Giới hạn sức mạnh của bạn đã được tăng lên 1 bậc");
+                // OpenPowerService advances the limit when the request is
+                // accepted.  This timer is only the cooldown/status marker;
+                // advancing here would silently skip a second threshold.
                 isOpenPower = false;
             }
         }

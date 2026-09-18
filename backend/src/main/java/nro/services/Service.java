@@ -938,10 +938,32 @@ public class Service {
             return 70010000000L;
         } else if (sucmanh < 80010000000L) {
             return 80010000000L;
+        } else if (sucmanh < 90010000000L) {
+            return 90010000000L;
         } else if (sucmanh < 100010000000L) {
             return 100010000000L;
+        } else if (sucmanh < 130010000000L) {
+            return 130010000000L;
+        } else if (sucmanh < 150010000000L) {
+            return 150010000000L;
+        } else if (sucmanh < 180010000000L) {
+            return 180010000000L;
+        } else if (sucmanh < 200000000000L) {
+            return 200000000000L;
+        } else if (sucmanh < 250000000000L) {
+            return 250000000000L;
+        } else if (sucmanh < 300000000000L) {
+            return 300000000000L;
+        } else if (sucmanh < 400000000000L) {
+            return 400000000000L;
+        } else if (sucmanh < 500000000000L) {
+            return 500000000000L;
+        } else if (sucmanh < 700000000000L) {
+            return 700000000000L;
+        } else if (sucmanh < 1_000_000_000_000L) {
+            return 1_000_000_000_000L;
         }
-        return 1000;
+        return 1_000_000_000_000L;
     }
 
     public void point(Player player) {
@@ -1270,61 +1292,78 @@ public class Service {
         Captions.add("Giới Vương Thần cấp 3");
         Captions.add("Thần hủy diệt cấp 1");
         Captions.add("Thần hủy diệt cấp 2");
-        Captions.add("MaiTienDung");
+        Captions.add("Thần hủy diệt cấp 3");
+        Captions.add("Thiên sứ cấp 1");
+        Captions.add("Thiên sứ cấp 2");
+        Captions.add("Thiên sứ cấp 3");
+        Captions.add("Đại thiên sứ cấp 1");
+        Captions.add("Đại thiên sứ cấp 2");
+        Captions.add("Đại thiên sứ cấp 3");
         return Captions;
     }
 
     public String getCurrStrLevel(Player pl) {
-        return ListCaption(pl.gender).get(getCurrLevel(pl));
+        if (pl == null) {
+            return "";
+        }
+        Caption caption = CaptionManager.getInstance().findLevel(getCurrLevel(pl));
+        if (caption != null) {
+            return caption.getCaption(pl.gender);
+        }
+        List<String> captions = ListCaption(pl.gender);
+        int level = getCurrLevel(pl);
+        return level >= 0 && level < captions.size() ? captions.get(level) : captions.get(0);
     }
 
     public int getCurrLevel(Player pl) {
-        if (pl.nPoint == null) {
+        if (pl == null || pl.nPoint == null) {
             return 0;
         }
-        long sucmanh = pl.nPoint.power;
-        if (sucmanh < 3000) {
-            return 0;
-        } else if (sucmanh < 15000) {
-            return 1;
-        } else if (sucmanh < 40000) {
-            return 2;
-        } else if (sucmanh < 90000) {
-            return 3;
-        } else if (sucmanh < 170000) {
-            return 4;
-        } else if (sucmanh < 340000) {
-            return 5;
-        } else if (sucmanh < 700000) {
-            return 6;
-        } else if (sucmanh < 1500000) {
-            return 7;
-        } else if (sucmanh < 15000000) {
-            return 8;
-        } else if (sucmanh < 150000000) {
-            return 9;
-        } else if (sucmanh < 1500000000) {
-            return 10;
-        } else if (sucmanh < 5000000000L) {
-            return 11;
-        } else if (sucmanh < 10000000000L) {
-            return 12;
-        } else if (sucmanh < 40000000000L) {
-            return 13;
-        } else if (sucmanh < 50010000000L) {
-            return 14;
-        } else if (sucmanh < 60010000000L) {
-            return 15;
-        } else if (sucmanh < 70010000000L) {
-            return 16;
-        } else if (sucmanh < 80010000000L) {
-            return 17;
-        } else if (sucmanh < 100010000000L) {
-            return 18;
-        } else if (sucmanh < 11100010000000L) {
-            return 19;
+        if (!CaptionManager.getInstance().getCaptions().isEmpty()) {
+            return CaptionManager.getInstance().getLevel(pl);
         }
-        return 20;
+        return getLegacyCurrLevel(pl.nPoint.power);
+    }
+
+    private int getLegacyCurrLevel(long power) {
+        long[] thresholds = {
+            1000L, 3000L, 15000L, 40000L, 90000L, 170000L,
+            340000L, 700000L, 1500000L, 15000000L, 150000000L,
+            1500000000L, 5000000000L, 10000000000L, 40000000000L,
+            50010000000L, 60010000000L, 70010000000L, 80010000000L,
+            90010000000L, 100010000000L, 200000000000L, 250000000000L,
+            300000000000L, 400000000000L, 500000000000L, 700000000000L,
+            1_000_000_000_000L
+        };
+        int level = 0;
+        for (int i = thresholds.length - 1; i >= 0; i--) {
+            if (power >= thresholds[i]) {
+                level = i;
+                break;
+            }
+        }
+        return level;
+    }
+
+    /**
+     * Returns the next limit's caption and numeric requirement for NPC menus.
+     * Numeric-only fallback keeps older/custom power-limit rows usable.
+     */
+    public String getPowerLimitDisplay(Player target) {
+        if (target == null || target.nPoint == null) {
+            return "";
+        }
+        long nextPower = target.nPoint.getPowerNextLimit();
+        if (nextPower <= 0) {
+            return "mức tối đa";
+        }
+        String numeric = Util.formatNumber(nextPower, FormatStyle.VIETNAMESE);
+        Caption caption = CaptionManager.getInstance().findByPower(nextPower);
+        if (caption == null || caption.getCaption(target.gender) == null
+                || caption.getCaption(target.gender).trim().isEmpty()) {
+            return numeric;
+        }
+        return caption.getCaption(target.gender) + " (" + numeric + " sức mạnh)";
     }
 
     public void hsChar(Player pl, long hp, long mp) {

@@ -1044,9 +1044,16 @@ INSERT INTO `caption` (`id`, `earth`, `saiya`, `namek`, `power`) VALUES
 (16, 'Thần Trái Đất cấp 3', 'Thần Xayda cấp 3', 'Thần Namếc cấp 3', 50010000000),
 (17, 'Giới Vương Thần cấp 1', 'Giới Vương Thần cấp 1', 'Giới Vương Thần cấp 1', 60010000000),
 (18, 'Giới Vương Thần cấp 2', 'Giới Vương Thần cấp 2', 'Giới Vương Thần cấp 2', 70010000000),
-(19, 'KaioShin', 'KaioShin', 'KaioShin', 80010000000),
-(20, 'KaioShin cấp 2', 'KaioShin cấp 2', 'KaioShin cấp 2', 90010000000),
-(21, 'Chưa update', 'Chưa update', 'Chưa update', 100010000000);
+(19, 'Giới Vương Thần cấp 3', 'Giới Vương Thần cấp 3', 'Giới Vương Thần cấp 3', 80010000000),
+(20, 'Thần hủy diệt cấp 1', 'Thần hủy diệt cấp 1', 'Thần hủy diệt cấp 1', 90010000000),
+(21, 'Thần hủy diệt cấp 2', 'Thần hủy diệt cấp 2', 'Thần hủy diệt cấp 2', 100010000000),
+(22, 'Thần hủy diệt cấp 3', 'Thần hủy diệt cấp 3', 'Thần hủy diệt cấp 3', 200000000000),
+(23, 'Thiên sứ cấp 1', 'Thiên sứ cấp 1', 'Thiên sứ cấp 1', 250000000000),
+(24, 'Thiên sứ cấp 2', 'Thiên sứ cấp 2', 'Thiên sứ cấp 2', 300000000000),
+(25, 'Thiên sứ cấp 3', 'Thiên sứ cấp 3', 'Thiên sứ cấp 3', 400000000000),
+(26, 'Đại thiên sứ cấp 1', 'Đại thiên sứ cấp 1', 'Đại thiên sứ cấp 1', 500000000000),
+(27, 'Đại thiên sứ cấp 2', 'Đại thiên sứ cấp 2', 'Đại thiên sứ cấp 2', 700000000000),
+(28, 'Đại thiên sứ cấp 3', 'Đại thiên sứ cấp 3', 'Đại thiên sứ cấp 3', 1000000000000);
 
 -- --------------------------------------------------------
 
@@ -14134,7 +14141,14 @@ INSERT INTO `power_limit` (`id`, `power`, `hp`, `mp`, `damage`, `defense`, `crit
 (10, 100010000000, 600000, 600000, 27500, 1800, 10),
 (11, 130010000000, 625000, 625000, 30000, 2000, 10),
 (12, 150010000000, 655000, 655000, 32000, 2200, 10),
-(13, 180010000000, 700000, 700000, 35000, 2500, 10);
+(13, 180010000000, 700000, 700000, 35000, 2500, 10),
+(14, 200000000000, 750000, 750000, 37500, 2700, 10),
+(15, 250000000000, 800000, 800000, 40000, 2900, 10),
+(16, 300000000000, 850000, 850000, 42500, 3100, 10),
+(17, 400000000000, 900000, 900000, 45000, 3300, 10),
+(18, 500000000000, 950000, 950000, 47500, 3500, 10),
+(19, 700000000000, 1000000, 1000000, 50000, 3800, 10),
+(20, 1000000000000, 1100000, 1100000, 55000, 4200, 10);
 
 -- --------------------------------------------------------
 
@@ -15407,7 +15421,7 @@ ALTER TABLE `attribute_template`
 -- AUTO_INCREMENT cho bảng `caption`
 --
 ALTER TABLE `caption`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT cho bảng `chan_le`
@@ -15563,7 +15577,7 @@ ALTER TABLE `posts`
 -- AUTO_INCREMENT cho bảng `power_limit`
 --
 ALTER TABLE `power_limit`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT cho bảng `shop`
