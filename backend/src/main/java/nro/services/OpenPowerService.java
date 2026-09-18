@@ -121,4 +121,16 @@ public class OpenPowerService {
                 + Util.formatNumber(required, FormatStyle.VIETNAMESE)
                 + " để mở bậc kế tiếp");
     }
+
+    public String getPowerRequirementText(Player player) {
+        if (player == null || player.nPoint == null) {
+            return "Điều kiện sức mạnh chưa xác định.";
+        }
+        if (!player.nPoint.requiresPowerToOpen()) {
+            return "Có thể mở trước khi đạt mốc sức mạnh này.";
+        }
+        return "Điều kiện: đạt "
+                + Util.formatNumber(player.nPoint.getPowerLimit(), FormatStyle.VIETNAMESE)
+                + " sức mạnh.";
+    }
 }

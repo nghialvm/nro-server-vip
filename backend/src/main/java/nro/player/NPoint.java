@@ -2904,7 +2904,22 @@ private boolean hasFull5NhatAn() {
 
     /*------------------------------------------------------------------------*/
     public boolean canOpenPower() {
-        return this.powerLimit != null && this.power >= this.powerLimit.getPower();
+        PowerLimit currentLimit = this.powerLimit != null
+                ? this.powerLimit
+                : PowerLimitManager.getInstance().get(this.limitPower);
+        if (currentLimit == null) {
+            return false;
+        }
+        return !PowerLimitManager.getInstance().requiresPowerToOpen(currentLimit.getId())
+                || this.power >= currentLimit.getPower();
+    }
+
+    public boolean requiresPowerToOpen() {
+        PowerLimit currentLimit = this.powerLimit != null
+                ? this.powerLimit
+                : PowerLimitManager.getInstance().get(this.limitPower);
+        return currentLimit != null
+                && PowerLimitManager.getInstance().requiresPowerToOpen(currentLimit.getId());
     }
 
     public long getPowerLimit() {

@@ -14,6 +14,8 @@ import lombok.Getter;
 
 public class PowerLimitManager {
 
+    private static final long POWER_REQUIRED_TO_OPEN_LIMIT = 180_000_000_000L;
+
     private static final PowerLimitManager instance = new PowerLimitManager();
 
     public static PowerLimitManager getInstance() {
@@ -106,6 +108,11 @@ public class PowerLimitManager {
 
     public boolean hasNext(int currentId) {
         return getNext(currentId) != null;
+    }
+
+    public boolean requiresPowerToOpen(int currentId) {
+        PowerLimit currentLimit = get(currentId);
+        return currentLimit != null && currentLimit.getPower() >= POWER_REQUIRED_TO_OPEN_LIMIT;
     }
 
     public int getMaxId() {
