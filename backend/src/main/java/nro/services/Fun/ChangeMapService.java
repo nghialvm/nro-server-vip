@@ -36,6 +36,9 @@ import nro.map.DragonNamecWar.TranhNgocService;
 
 public class ChangeMapService {
 
+    private static final int CHANGE_ZONE_COOLDOWN_SECONDS = 5;
+    private static final long CHANGE_ZONE_COOLDOWN_MILLIS = CHANGE_ZONE_COOLDOWN_SECONDS * 1000L;
+
     private static final byte EFFECT_GO_TO_TUONG_LAI = 0;
     private static final byte EFFECT_GO_TO_BDKB = 1;
 
@@ -248,12 +251,9 @@ public class ChangeMapService {
             }
         }
 
-        if (pl.isFounder() || pl.isQuanTriVien() || pl.isBoss || Util.canDoWithTime(pl.iDMark.getLastTimeChangeZone(), 10000)) {
-            if (pl.itemTime.isUseTDLT) {
-                pl.iDMark.setLastTimeChangeZone(System.currentTimeMillis() - 5000);
-            } else {
-                pl.iDMark.setLastTimeChangeZone(System.currentTimeMillis());
-            }
+        if (pl.isFounder() || pl.isQuanTriVien() || pl.isBoss
+                || Util.canDoWithTime(pl.iDMark.getLastTimeChangeZone(), CHANGE_ZONE_COOLDOWN_MILLIS)) {
+            pl.iDMark.setLastTimeChangeZone(System.currentTimeMillis());
             Map map = pl.zone.map;
             if (zoneId >= 0 && zoneId <= map.zones.size() - 1) {
                 Zone zoneJoin = map.zones.get(zoneId);
@@ -267,10 +267,9 @@ public class ChangeMapService {
             } else {
                 Service.gI().sendThongBaoFromAdmin(pl, "Không thể thực hiện");
             }
-        } else if (!pl.isFounder() || !pl.isQuanTriVien() || !pl.isBoss) {
-            Service.gI().sendThongBaoFromAdmin(pl, "Đổi khu quá nhanh, vui lòng đợi " + TimeUtil.getTimeLeft(pl.iDMark.getLastTimeChangeZone(), 10));
-        } else if (pl.isPl() && pl.itemTime.isUseTDLT) {
-            Service.gI().sendThongBaoFromAdmin(pl, "Đổi khu quá nhanh, vui lòng đợi " + TimeUtil.getTimeLeft(pl.iDMark.getLastTimeChangeZone(), 5));
+        } else {
+            Service.gI().sendThongBaoFromAdmin(pl, "Đổi khu quá nhanh, vui lòng đợi "
+                    + TimeUtil.getTimeLeft(pl.iDMark.getLastTimeChangeZone(), CHANGE_ZONE_COOLDOWN_SECONDS));
         }
     }
 

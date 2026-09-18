@@ -96,7 +96,7 @@ public final class Manager {
     public static long LAST_TIME_UPDATE_BXH;
     public static boolean HAVE_EFFECT_NIGHT_SKY = false; 
     public static byte SERVER = 1;
-    public static byte SECOND_WAIT_LOGIN = 10;
+    public static byte SECOND_WAIT_LOGIN = 5;
     public static int MAX_PER_IP = 3;
     public static int MAX_PLAYER = 1000;
     public static int RATE_EXP_SERVER = 10;
