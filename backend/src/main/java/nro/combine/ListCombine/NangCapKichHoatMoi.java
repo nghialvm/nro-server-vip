@@ -94,7 +94,7 @@ public final class NangCapKichHoatMoi {
             return;
         }
 
-        ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.randomNewSet();
+        ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.randomNewSet(player.gender);
         Item item = NangCapKichHoatVip.createVipActivationItem(player, definition);
         if (item == null) {
             player.inventory.gold += COST;

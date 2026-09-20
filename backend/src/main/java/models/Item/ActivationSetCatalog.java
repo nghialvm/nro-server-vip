@@ -61,6 +61,17 @@ public final class ActivationSetCatalog {
         {134, 135, 133, 233, 252, 263, 265, 267}
     };
 
+    /*
+     * New activation sets available to each planet when exchanging at Ba Hat Mit.
+     * The five all-gender sets are available in every pool; the other two are
+     * the planet-specific sets declared in SetClothes.
+     */
+    private static final int[][] NEW_SET_IDS_BY_GENDER = {
+        {250, 245, 233, 263, 265, 267, 269}, // Earth: Yamcha, Kaio + shared
+        {251, 237, 233, 263, 265, 267, 269}, // Namek: Slug, Nail + shared
+        {252, 241, 233, 263, 265, 267, 269}  // Saiyan: Broly, Cadic M + shared
+    };
+
     private static final int[] ADVANCED_DROP_SET_IDS_BY_GENDER = {245, 237, 241, 269};
 
     static {
@@ -128,13 +139,15 @@ public final class ActivationSetCatalog {
     }
 
     public static int[] getOldSetIds(int gender) {
-        int normalizedGender = gender >= 0 && gender < OLD_SET_IDS_BY_GENDER.length ? gender : 2;
-        return OLD_SET_IDS_BY_GENDER[normalizedGender].clone();
+        return OLD_SET_IDS_BY_GENDER[normalizeGender(gender)].clone();
     }
 
     public static int[] getStandardDropSetIds(int gender) {
-        int normalizedGender = gender >= 0 && gender < STANDARD_DROP_SET_IDS_BY_GENDER.length ? gender : 2;
-        return STANDARD_DROP_SET_IDS_BY_GENDER[normalizedGender].clone();
+        return STANDARD_DROP_SET_IDS_BY_GENDER[normalizeGender(gender)].clone();
+    }
+
+    public static int[] getNewSetIds(int gender) {
+        return NEW_SET_IDS_BY_GENDER[normalizeGender(gender)].clone();
     }
 
     public static int getAdvancedDropSetId(int gender) {
@@ -155,8 +168,13 @@ public final class ActivationSetCatalog {
         return getDefinition(ids[Util.nextInt(ids.length)]);
     }
 
-    public static SetDefinition randomNewSet() {
-        return NEW_SETS.get(Util.nextInt(NEW_SETS.size()));
+    public static SetDefinition randomNewSet(int gender) {
+        int[] ids = getNewSetIds(gender);
+        return getDefinition(ids[Util.nextInt(ids.length)]);
+    }
+
+    private static int normalizeGender(int gender) {
+        return gender >= 0 && gender < NEW_SET_IDS_BY_GENDER.length ? gender : 2;
     }
 
     public static boolean isActivationOption(int optionId) {
