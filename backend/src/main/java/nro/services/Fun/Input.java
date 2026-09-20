@@ -19,6 +19,7 @@ import nro.server.ServerNotify;
 import nro.services.DetuService;
 import nro.services.Service;
 import models.Item.ItemService;
+import models.Item.ActivationSetCatalog;
 import nro.services.NapThe;
 import nro.services.NpcService;
 import nro.services.PlayerService;
@@ -1383,25 +1384,12 @@ public class Input {
                                 Service.getInstance().sendMoney(player);
                             } else {
                                 Item itemBuffTemplate = ItemService.gI().createNewItem((short) idItemBuff);
-                                itemBuffTemplate.itemOptions.add(new ItemOption(idOptionSKH, 0));
-                               if (idOptionSKH == 127) {
-                                    itemBuffTemplate.itemOptions.add(new ItemOption(139, 0));
-                                } else if (idOptionSKH == 128) {
-                                    itemBuffTemplate.itemOptions.add(new ItemOption(140, 0));
-                                } else if (idOptionSKH == 129) {
-                                    itemBuffTemplate.itemOptions.add(new ItemOption(141, 0));
-                                } else if (idOptionSKH == 130) {
-                                    itemBuffTemplate.itemOptions.add(new ItemOption(143, 0));
-                                } else if (idOptionSKH == 131) {
-                                    itemBuffTemplate.itemOptions.add(new ItemOption(254, 0));
-                                } else if (idOptionSKH == 132) {
-                                    itemBuffTemplate.itemOptions.add(new ItemOption(144, 0));
-                                } else if (idOptionSKH == 133) {
-                                    itemBuffTemplate.itemOptions.add(new ItemOption(136, 0));
-                                } else if (idOptionSKH == 134) {
-                                    itemBuffTemplate.itemOptions.add(new ItemOption(137, 0));
-                                } else if (idOptionSKH == 135) {
-                                    itemBuffTemplate.itemOptions.add(new ItemOption(138, 0));
+                                ActivationSetCatalog.SetDefinition definition
+                                        = ActivationSetCatalog.getDefinition(idOptionSKH);
+                                if (definition != null) {
+                                    for (int optionId : definition.getOptionIds()) {
+                                        itemBuffTemplate.itemOptions.add(new ItemOption(optionId, 0));
+                                    }
                                 }
                                 itemBuffTemplate.itemOptions.add(new ItemOption(30, 0));
                                 itemBuffTemplate.itemOptions.add(new ItemOption(idOptionBuff, slOptionBuff));

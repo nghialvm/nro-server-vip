@@ -2,7 +2,6 @@ package models.Item;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.StringJoiner;
 import nro.combine.CombineUtil;
 import nro.template.ItemTemplate;
@@ -80,7 +79,8 @@ public class Item {
 
     public boolean isSKH() {
         for (ItemOption itemOption : itemOptions) {
-            if (itemOption.optionTemplate.id >= 127 && itemOption.optionTemplate.id <= 135) {
+            if (itemOption != null && itemOption.optionTemplate != null
+                    && ActivationSetCatalog.isActivationOption(itemOption.optionTemplate.id)) {
                 return true;
             }
         }
@@ -481,12 +481,10 @@ public class Item {
         return false;
     }
 
-    private static final Set<Integer> KICH_HOAT_IDS = Set.of(127, 128, 129, 130, 131, 132, 133, 134, 135);
-
     public boolean haveSetKichHoat() {
         if (this != null && this.isNotNullItem()) {
-            return this.itemOptions.stream().anyMatch(op -> op != null && KICH_HOAT_IDS.contains(op.optionTemplate.id)
-            );
+            return this.itemOptions.stream().anyMatch(op -> op != null && op.optionTemplate != null
+                    && ActivationSetCatalog.isActivationOption(op.optionTemplate.id));
         }
         return false;
     }

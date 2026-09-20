@@ -10,6 +10,7 @@ import consts.ConstNpc;
 import models.Item.Item;
 import models.Item.ItemOption;
 import models.Item.ItemService;
+import models.Item.ActivationSetCatalog;
 import models.Reward.RewardService;
 import nro.combine.CombineService;
 
@@ -69,12 +70,7 @@ public class NangCapKichHoat {
         player.inventory.gold -= GOLD_REQUIRE;
         Service.gI().sendMoney(player);
 
-        int gender = player.gender; // ✅ lấy theo hệ của nhân vật, không lấy theo item
-        int[] maleOptions = {129, 141, 127, 139, 128, 140};
-        int[] femaleOptions = {132, 144, 131, 254, 130, 143};
-        int[] otherOptions = {135, 138, 133, 136, 134, 137};
-        int[] selectedOptions = (gender == 0) ? maleOptions
-                : (gender == 1) ? femaleOptions : otherOptions;
+        ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.randomOldSet(player.gender);
 
         // ✅ Sinh đồ Kích Hoạt mới theo hệ của nhân vật
         Item newItem = (huyDiet.template.type == 4)
@@ -84,15 +80,8 @@ public class NangCapKichHoat {
         RewardService.gI().initBaseOptionClothes(newItem.template.id, newItem.template.type, newItem.itemOptions);
 
         // ✅ Random option kích hoạt
-        if (Util.isTrue(15, 100)) {
-            newItem.itemOptions.add(new ItemOption(selectedOptions[0], 0));
-            newItem.itemOptions.add(new ItemOption(selectedOptions[1], 0));
-        } else if (Util.isTrue(75, 100)) {
-            newItem.itemOptions.add(new ItemOption(selectedOptions[2], 0));
-            newItem.itemOptions.add(new ItemOption(selectedOptions[3], 0));
-        } else {
-            newItem.itemOptions.add(new ItemOption(selectedOptions[4], 0));
-            newItem.itemOptions.add(new ItemOption(selectedOptions[5], 0));
+        for (int optionId : definition.getOptionIds()) {
+            newItem.itemOptions.add(new ItemOption(optionId, 0));
         }
 
         newItem.itemOptions.add(new ItemOption(30, 0));

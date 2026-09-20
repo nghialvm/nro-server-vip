@@ -20,6 +20,7 @@ import nro.combine.ListCombine.NangCapChanMenh;
 import nro.combine.ListCombine.NangCapDeTu;
 import nro.combine.ListCombine.NangCapDoHuyDiet;
 import nro.combine.ListCombine.NangCapKichHoat;
+import nro.combine.ListCombine.NangCapKichHoatMoi;
 import nro.combine.ListCombine.NangCapKichHoatVip;
 import nro.combine.ListCombine.NangCapSachTuyetKy;
 import nro.combine.ListCombine.NangCapSaoPhaLe;
@@ -75,6 +76,7 @@ public class CombineService {
     public static final int NANG_CHI_SO_BONG_TAI = 517;
     public static final int NANG_CAP_KICH_HOAT = 518;
     public static final int NANG_CAP_KICH_HOAT_VIP = 519;
+    public static final int NANG_CAP_KICH_HOAT_MOI = 602;
     public static final int NANG_CAP_BONG_TAI_3 = 530;      // nâng BT2 -> BT3
     public static final int NANG_CHI_SO_BONG_TAI_3 = 531;   // mở chỉ số BT3
 
@@ -184,6 +186,9 @@ public class CombineService {
                 break;
             case NANG_CAP_KICH_HOAT_VIP:
                 NangCapKichHoatVip.showInfoCombine(player);
+                break;
+            case NANG_CAP_KICH_HOAT_MOI:
+                NangCapKichHoatMoi.showInfoCombine(player);
                 break;
             case DAP_DO_AO_HOA:
                 DapDoAoHoa.showInfoCombine(player);
@@ -300,6 +305,9 @@ public class CombineService {
                 break;
             case NANG_CAP_KICH_HOAT_VIP:
                 NangCapKichHoatVip.startCombine(player);
+                break;
+            case NANG_CAP_KICH_HOAT_MOI:
+                NangCapKichHoatMoi.startCombine(player);
                 break;
             case DAP_DO_AO_HOA:
                 DapDoAoHoa.startCombine(player);
@@ -623,6 +631,8 @@ public class CombineService {
                 return "Ta sẽ phù phép\nchế tạo trang bị Huỷ Diệt\nthành trang bị Kích Hoạt";
             case NANG_CAP_KICH_HOAT_VIP:
                 return "Ta sẽ phù phép\ntrang bị Hủy Diệt\nthành trang bị Kích Hoạt VIP";
+            case NANG_CAP_KICH_HOAT_MOI:
+                return "Ta sẽ phù phép\ntrang bị Hủy Diệt\nthành trang bị Kích Hoạt mới";
             case GIA_HAN_VAT_PHAM:
                 return "Ta sẽ phù phép\ncho trang bị của ngươi\nthêm hạn sử dụng";
             case SIEU_HOA:
@@ -701,6 +711,8 @@ public class CombineService {
             case NANG_CAP_KICH_HOAT_VIP:
                 // 🔥 FIXED: chỉ cần 1 món Thiên Sứ
                 return "Vào hành trang\nChọn 3 trang bị Hủy Diệt\nSau đó chọn 'Nâng cấp' để chế tạo trang bị Kích Hoạt VIP";
+            case NANG_CAP_KICH_HOAT_MOI:
+                return "Vào hành trang\nChọn 3 trang bị Hủy Diệt\nSau đó chọn 'Đổi' để chế tạo trang bị Kích Hoạt mới";
             case DAP_DO_AO_HOA:
                 return "Vào hành trang\nChọn trang bị và loại đá quý nâng cấp\nCó thể thêm đá bảo vệ để tránh tụt cấp\nSau đó chọn 'Nâng cấp'";
             case PS_HOA_TRANG_BI:

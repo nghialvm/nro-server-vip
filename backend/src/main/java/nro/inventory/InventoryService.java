@@ -4,6 +4,7 @@ import Utils.Logger;
 import Utils.TimeUtil;
 import nro.server.Client;
 import models.Item.Item;
+import models.Item.ActivationSetCatalog;
 import models.Item.ItemMapService;
 import models.Item.ItemService;
 import nro.npc.Special.BillEgg;
@@ -687,25 +688,7 @@ public class InventoryService {
                 Service.getInstance().removeDanhHieu(player);
                 Service.getInstance().sendChanMenh(player, item.template.id);
             }
-            updateSet(player, 127, 139);
-            updateSet(player, 128, 140);
-            updateSet(player, 129, 141);
-            updateSet(player, 130, 142);
-            updateSet(player, 131, 143);
-            updateSet(player, 132, 144);
-            updateSet(player, 133, 136);
-            updateSet(player, 134, 137);
-            updateSet(player, 135, 138);
-            updateSet(player, 233, 234);
-            updateSet(player, 250, 253);
-            updateSet(player, 251, 254);
-            updateSet(player, 252, 255);
-            updateSet(player, 263, 264);
-            updateSet(player, 265, 266);
-            updateSet(player, 267, 268);
-            updateSetNew(player, 241, 244, new int[]{242, 243, 244});
-            updateSetNew(player, 237, 240, new int[]{238, 239, 240});
-            updateSetNew(player, 245, 248, new int[]{246, 247, 248});
+            updateActivationSets(player);
             sendItemBag(player);
             sendItemBody(player);
             Service.gI().point(player);
@@ -735,25 +718,7 @@ public class InventoryService {
                 Service.getInstance().removeDanhHieu(player);
             }
             player.inventory.itemsBody.set(index, putItemBag(player, item));
-            resetSet(player, player, player, 127, 139);
-            resetSet(player, player, player, 128, 140);
-            resetSet(player, player, player, 129, 141);
-            resetSet(player, player, player, 130, 142);
-            resetSet(player, player, player, 131, 143);
-            resetSet(player, player, player, 132, 144);
-            resetSet(player, player, player, 133, 136);
-            resetSet(player, player, player, 134, 137);
-            resetSet(player, player, player, 135, 138);
-            resetSet(player, player, player, 233, 234);
-            resetSet(player, player, player, 250, 253);
-            resetSet(player, player, player, 251, 254);
-            resetSet(player, player, player, 252, 255);
-            resetSet(player, player, player, 263, 264);
-            resetSet(player, player, player, 265, 266);
-            resetSet(player, player, player, 267, 268);
-            resetSetNew(player, player, player, 241, 244, new int[]{242, 243, 244});
-            resetSetNew(player, player, player, 237, 240, new int[]{238, 239, 240});
-            resetSetNew(player, player, player, 245, 248, new int[]{246, 247, 248});
+            resetActivationSets(player, player, player);
             sendItemBag(player);
             sendItemBody(player);
             if (index == 8 || index == 12) {
@@ -774,25 +739,7 @@ public class InventoryService {
                 if (item.isNotNullItem()) {
                     Item itemSwap = putItemBody(player.Detu, item);
                     player.inventory.itemsBag.set(index, itemSwap);
-                    updateSet(player.Detu, 127, 139);
-                    updateSet(player.Detu, 128, 140);
-                    updateSet(player.Detu, 129, 141);
-                    updateSet(player.Detu, 130, 142);
-                    updateSet(player.Detu, 131, 143);
-                    updateSet(player.Detu, 132, 144);
-                    updateSet(player.Detu, 133, 136);
-                    updateSet(player.Detu, 134, 137);
-                    updateSet(player.Detu, 135, 138);
-                    updateSet(player.Detu, 233, 234);
-                    updateSet(player.Detu, 250, 253);
-                    updateSet(player.Detu, 251, 254);
-                    updateSet(player.Detu, 252, 255);
-                    updateSet(player.Detu, 263, 264);
-                    updateSet(player.Detu, 265, 266);
-                    updateSet(player.Detu, 267, 268);
-                    updateSetNew(player.Detu, 241, 244, new int[]{242, 243, 244});
-                    updateSetNew(player.Detu, 237, 240, new int[]{238, 239, 240});
-                    updateSetNew(player.Detu, 245, 248, new int[]{246, 247, 248});
+                    updateActivationSets(player.Detu);
                     sendItemBag(player);
                     sendItemBody(player);
                     if (!itemSwap.equals(item)) {
@@ -830,25 +777,7 @@ public class InventoryService {
         item = petPl.inventory.itemsBody.get(index);
         if (item.isNotNullItem()) {
             petPl.inventory.itemsBody.set(index, putItemBag(player, item));
-            resetSet(petPl, player, player, 127, 139);
-            resetSet(petPl, player, player, 128, 140);
-            resetSet(petPl, player, player, 129, 141);
-            resetSet(petPl, player, player, 130, 142);
-            resetSet(petPl, player, player, 131, 143);
-            resetSet(petPl, player, player, 132, 144);
-            resetSet(petPl, player, player, 133, 136);
-            resetSet(petPl, player, player, 134, 137);
-            resetSet(petPl, player, player, 135, 138);
-            resetSet(petPl, player, player, 233, 234);
-            resetSet(petPl, player, player, 250, 253);
-            resetSet(petPl, player, player, 251, 254);
-            resetSet(petPl, player, player, 252, 255);
-            resetSet(petPl, player, player, 263, 264);
-            resetSet(petPl, player, player, 265, 266);
-            resetSet(petPl, player, player, 267, 268);
-            resetSetNew(petPl, player, player, 241, 244, new int[]{242, 243, 244});
-            resetSetNew(petPl, player, player, 237, 240, new int[]{238, 239, 240});
-            resetSetNew(petPl, player, player, 245, 248, new int[]{246, 247, 248});
+            resetActivationSets(petPl, player, player);
             sendItemBag(player);
             sendItemBody(player);
             Service.gI().point(player);
@@ -891,25 +820,7 @@ public class InventoryService {
                         if (powerRequire <= player.nPoint.power) {
                             player.inventory.itemsBody.set(item.template.type == 32 ? 6 : item.template.type, item);
                             player.inventory.itemsBox.set(index, itemBody);
-                            updateSet(player, 127, 139);
-                            updateSet(player, 128, 140);
-                            updateSet(player, 129, 141);
-                            updateSet(player, 130, 142);
-                            updateSet(player, 131, 143);
-                            updateSet(player, 132, 144);
-                            updateSet(player, 133, 136);
-                            updateSet(player, 134, 137);
-                            updateSet(player, 135, 138);
-                            updateSet(player, 233, 234);
-                            updateSet(player, 250, 253);
-                            updateSet(player, 251, 254);
-                            updateSet(player, 252, 255);
-                            updateSet(player, 263, 264);
-                            updateSet(player, 265, 266);
-                            updateSet(player, 267, 268);
-                            updateSetNew(player, 241, 244, new int[]{242, 243, 244});
-                            updateSetNew(player, 237, 240, new int[]{238, 239, 240});
-                            updateSetNew(player, 245, 248, new int[]{246, 247, 248});
+                            updateActivationSets(player);
                             done = true;
                             sendItemBody(player);
                             Service.gI().point(player);
@@ -995,25 +906,7 @@ public class InventoryService {
                     player.inventory.itemsBag.set(index, sItem);
                 }
                 sortItems(player.inventory.itemsBag);
-                resetSet(player, player, player, 127, 139);
-                resetSet(player, player, player, 128, 140);
-                resetSet(player, player, player, 129, 141);
-                resetSet(player, player, player, 130, 142);
-                resetSet(player, player, player, 131, 143);
-                resetSet(player, player, player, 132, 144);
-                resetSet(player, player, player, 133, 136);
-                resetSet(player, player, player, 134, 137);
-                resetSet(player, player, player, 135, 138);
-                resetSet(player, player, player, 233, 234);
-                resetSet(player, player, player, 250, 253);
-                resetSet(player, player, player, 251, 254);
-                resetSet(player, player, player, 252, 255);
-                resetSet(player, player, player, 263, 264);
-                resetSet(player, player, player, 265, 266);
-                resetSet(player, player, player, 267, 268);
-                resetSetNew(player, player, player, 241, 244, new int[]{242, 243, 244});
-                resetSetNew(player, player, player, 237, 240, new int[]{238, 239, 240});
-                resetSetNew(player, player, player, 245, 248, new int[]{246, 247, 248});
+                resetActivationSets(player, player, player);
                 sendItemBag(player);
                 sendItemBox(player);
             }
@@ -1052,25 +945,7 @@ public class InventoryService {
         if (item.isNotNullItem()) {
             player.inventory.itemsBody.set(index, putItemBox(player, item));
             sortItems(player.inventory.itemsBag);
-            resetSet(player, player, player, 127, 139);
-            resetSet(player, player, player, 128, 140);
-            resetSet(player, player, player, 129, 141);
-            resetSet(player, player, player, 130, 142);
-            resetSet(player, player, player, 131, 143);
-            resetSet(player, player, player, 132, 144);
-            resetSet(player, player, player, 133, 136);
-            resetSet(player, player, player, 134, 137);
-            resetSet(player, player, player, 135, 138);
-            resetSet(player, player, player, 233, 234);
-            resetSet(player, player, player, 250, 253);
-            resetSet(player, player, player, 251, 254);
-            resetSet(player, player, player, 252, 255);
-            resetSet(player, player, player, 263, 264);
-            resetSet(player, player, player, 265, 266);
-            resetSet(player, player, player, 267, 268);
-            resetSetNew(player, player, player, 241, 244, new int[]{242, 243, 244});
-            resetSetNew(player, player, player, 237, 240, new int[]{238, 239, 240});
-            resetSetNew(player, player, player, 245, 248, new int[]{246, 247, 248});
+            resetActivationSets(player, player, player);
             sendItemBody(player);
             sendItemBox(player);
             Service.gI().point(player);
@@ -2414,6 +2289,64 @@ public class InventoryService {
         return getIndexItem(player, player.clan.itemsBoxClan, item);
     }
 
+    private void updateActivationSets(Player player) {
+        if (player == null) {
+            return;
+        }
+        for (ActivationSetCatalog.SetDefinition definition : ActivationSetCatalog.getOldSets()) {
+            updateActivationSet(player, definition);
+        }
+        for (ActivationSetCatalog.SetDefinition definition : ActivationSetCatalog.getNewSets()) {
+            updateActivationSet(player, definition);
+        }
+    }
+
+    private void updateActivationSet(Player player, ActivationSetCatalog.SetDefinition definition) {
+        int[] optionIds = definition.getOptionIds();
+        if (definition.isAdvanced()) {
+            int[] applyIds = new int[optionIds.length - 1];
+            System.arraycopy(optionIds, 1, applyIds, 0, applyIds.length);
+            updateSetNew(player, optionIds[0], optionIds[optionIds.length - 1], applyIds);
+        } else {
+            updateSet(player, optionIds[0], optionIds[1]);
+        }
+    }
+
+    private void resetActivationSets(Player player, Player pl, Player plbox) {
+        if (player == null) {
+            return;
+        }
+        for (ActivationSetCatalog.SetDefinition definition : ActivationSetCatalog.getOldSets()) {
+            resetActivationSet(player, pl, plbox, definition);
+        }
+        for (ActivationSetCatalog.SetDefinition definition : ActivationSetCatalog.getNewSets()) {
+            resetActivationSet(player, pl, plbox, definition);
+        }
+    }
+
+    private void resetActivationSet(Player player, Player pl, Player plbox,
+            ActivationSetCatalog.SetDefinition definition) {
+        int[] optionIds = definition.getOptionIds();
+        if (definition.isAdvanced()) {
+            int[] applyIds = new int[optionIds.length - 1];
+            System.arraycopy(optionIds, 1, applyIds, 0, applyIds.length);
+            resetSetNew(player, pl, plbox, optionIds[0], optionIds[optionIds.length - 1], applyIds);
+        } else {
+            resetSet(player, pl, plbox, optionIds[0], optionIds[1]);
+        }
+    }
+
+    private boolean isActivationSetOption(ItemOption itemOption, int setOptionId) {
+        if (itemOption == null || itemOption.optionTemplate == null) {
+            return false;
+        }
+        ActivationSetCatalog.SetDefinition definition
+                = ActivationSetCatalog.getByOptionId(itemOption.optionTemplate.id);
+        return definition == null
+                ? itemOption.optionTemplate.id == setOptionId
+                : definition.getSetOptionId() == setOptionId;
+    }
+
     public void updateSet(Player player, int setOptionId, int applyId) {
         int count = 0;
         for (Item item : player.inventory.itemsBody) {
@@ -2421,7 +2354,7 @@ public class InventoryService {
                 continue;
             }
             for (ItemOption io : item.itemOptions) {
-                if (io.optionTemplate.id == setOptionId) {
+                if (isActivationSetOption(io, setOptionId)) {
                     count++;
                     break;
                 }
@@ -2446,7 +2379,7 @@ public class InventoryService {
                 continue;
             }
             for (ItemOption io : item.itemOptions) {
-                if (io.optionTemplate.id == setOptionId) {
+                if (isActivationSetOption(io, setOptionId)) {
                     count++;
                     break;
                 }

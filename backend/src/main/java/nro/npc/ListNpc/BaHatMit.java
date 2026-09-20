@@ -215,7 +215,7 @@ public class BaHatMit extends Npc {
                                     break;
                                 case 1://Chuyển hoá trang bị
                                     createOtherMenu(player, ConstMenu.MENU_NANG_CAP_TRANG_BI, "Ta sẽ biến trang bị của ngươi thành trang bị Kích Hoạt",
-                                            "Nâng đồ Hủy diệt","Kích hoạt\nThường", "Kích hoạt\nVIP");
+                                            "Nâng đồ Hủy diệt", "Kích hoạt\nThường", "Kích hoạt\nVIP", "Kích hoạt\nmới");
                                     break;
                                 case 2:
                                     ChangeMapService.gI().changeMapNonSpaceship(player, 112, 200 + Util.nextInt(-100, 100), 408);
@@ -358,6 +358,9 @@ public class BaHatMit extends Npc {
                                 case 2:
                                     CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_KICH_HOAT_VIP);
                                     break;
+                                case 3:
+                                    CombineService.gI().openTabCombine(player, CombineService.NANG_CAP_KICH_HOAT_MOI);
+                                    break;
                             }
                             break;
                         }
@@ -397,6 +400,7 @@ public class BaHatMit extends Npc {
                                     break;
                                 }
 
+                                case CombineService.NANG_CAP_KICH_HOAT_MOI:
                                 case CombineService.NANG_CAP_KICH_HOAT_VIP:
                                 case CombineService.NANG_CAP_KICH_HOAT:
                                 case CombineService.NANG_CAP_SAO_PHA_LE:

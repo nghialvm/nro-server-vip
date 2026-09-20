@@ -400,7 +400,10 @@ public class ItemService {
     }
 
     public boolean isItemActivation(Item item) {
-        return false;
+        return item != null && item.itemOptions != null
+                && item.itemOptions.stream().anyMatch(option -> option != null
+                && option.optionTemplate != null
+                && ActivationSetCatalog.isActivationOption(option.optionTemplate.id));
     }
 
     public int getPercentTrainArmor(Item item) {
@@ -550,16 +553,6 @@ public class ItemService {
             gender = 2; // Nếu là giới tính 3 thì quy về Xayda
         }
 
-        // Mảng 3 chiều chứa id option set cho từng chủng tộc
-        // options[gender][0] = Set loại 1
-        // options[gender][1] = Set loại 2
-        // options[gender][2] = Set loại 3
-        int[][] options = {
-            {128, 129, 127}, // Trái Đất
-            {131, 132, 130}, // Namếc
-            {133, 135, 134} // Xayda
-        };
-
         // Tỷ lệ rơi của từng loại set
         int skhv1 = 25; // 25% cho set loại 1
         int skhv2 = 35; // 35% cho set loại 2
@@ -577,68 +570,34 @@ public class ItemService {
             skhId = 2;
         }
 
-        // Trường hợp đặc biệt: Trái Đất và Set đầu tiên có thêm 50% cơ hội thành 214
-        if (gender == 0 && skhId == 0 && Util.isTrue(50, 100)) {
-            return 214;
-        }
-
-        // Trả về ID option set theo giới tính + loại set đã random
-        return options[gender][skhId];
+        return ActivationSetCatalog.getOldSetIds(gender)[skhId];
     }
 
     // Tạo ra 1 món đồ kích hoạt (SKH) dựa vào item gốc và skhId random
     public Item itemSKH(int itemId, int skhId) {
+        return itemSKH(itemId, ActivationSetCatalog.getByOptionId(skhId));
+    }
+
+    public Item itemSKH(int itemId, ActivationSetCatalog.SetDefinition definition) {
         // Tạo 1 item trống từ template
         Item item = createItemSetKichHoat(itemId, 1);
-        if (item != null) {
-            // Thêm các option cơ bản giống trong Shop
-            item.itemOptions.addAll(ItemService.gI().getListOptionItemShop((short) itemId));
-
-            // Thêm option set kích hoạt (ví dụ 127, 128, 129...)
-            item.itemOptions.add(new ItemOption(skhId, 1));
-
-            // Thêm option bonus tương ứng với set đó
-            // Ví dụ set 127 (Taiyoken) thì bonus 139 (x2 thời gian chói mắt)
-            item.itemOptions.add(new ItemOption(optionIdSKH(skhId), 1));
-
-            // Thêm option khóa (id = 30, param = 1)
-            item.itemOptions.add(new ItemOption(30, 1));
+        if (item == null || definition == null) {
+            return null;
         }
+        // Thêm các option cơ bản giống trong Shop
+        item.itemOptions.addAll(ItemService.gI().getListOptionItemShop((short) itemId));
+
+        for (int optionId : definition.getOptionIds()) {
+            item.itemOptions.add(new ItemOption(optionId, 1));
+        }
+
+        // Thêm option khóa (id = 30, param = 1)
+        item.itemOptions.add(new ItemOption(30, 1));
         return item;
     }
 
-    // Map từ option set (127–135, 250–255) sang option bonus đi kèm
-// Mỗi set có hiệu ứng riêng biệt
     public int optionIdSKH(int skhId) {
-        switch (skhId) {
-            case 127:
-                return 139; // Set Taiyoken -> x2 thời gian chói mắt
-            case 128:
-                return 140; // Set Genki -> +100% sát thương Quả Cầu Kênh Khi
-            case 129:
-                return 141; // Set Kamejoko -> +100% sát thương Kamejoko
-            case 130:
-                return 143; // Set Dame -> +150% KI
-//                return 142; // Set KI -> +50% sát thương Masenko
-            case 131:
-//                return 143; // Set Dame -> +150% KI
-                return 254; // Set Dame -> +100% sát thương liên hoàn
-            case 132:
-                return 144; // Set Summon -> +100% sát thương + bất tử đệ tử
-            case 133:
-                return 136; // Set Galick -> +100% sát thương đấm Galick
-            case 134:
-                return 137; // Set Monkey -> x5 thời gian hóa khỉ
-            case 135:
-                return 138; // Set HP -> +80% HP
-            case 250:
-                return 253; // Set Kaioken -> +100% sát thương Kaioken
-            case 251:
-                return 254; // Set Liên Hoàn -> +100% sát thương Liên Hoàn
-            case 255:
-                return 256; // Set Giảm Sát Thương -> +80% giảm sát thương
-        }
-        return 0; // fallback
+        return ActivationSetCatalog.getBonusOptionId(skhId);
     }
 
     public Item itemDHD(int itemId, int dhdId) {
@@ -652,34 +611,7 @@ public class ItemService {
     }
 
     public int optionIdDHD(int skhId) {
-        switch (skhId) {
-            case 127: //Set Taiyoken
-                return 139;
-            case 128: //Set Genki
-                return 140;
-            case 129: //Set Kamejoko
-                return 141;
-            case 130: //Set KI
-                return 143;
-            case 131: //Set Dame
-                return 254;
-            case 132: //Set Summon
-                return 144;
-            case 133: //Set Galick
-                return 136;
-            case 134: //Set Monkey
-                return 137;
-            case 135: //Set HP
-                return 138;
-            case 250: //Set Kaioken
-                return 253;
-            case 251: //Set Lien Hoàn
-                return 254;
-            case 255: //Set Giảm Sát Thương
-                return 256;
-
-        }
-        return 0;
+        return ActivationSetCatalog.getBonusOptionId(skhId);
     }
 
     public Item randomCS_DHD(int itemId, int gender) {
@@ -827,85 +759,16 @@ public class ItemService {
     }
 
     public int[] randOptionItemKichHoat(int gender) {
-        int[][] options;
-        switch (gender) {
-            case 0:
-                options = new int[][]{
-                    {128, 140},
-                    {127, 139},
-                    {129, 141},
-                    {233, 234},
-                    {250, 253},
-                    {263, 264},
-                    {265, 266},
-                    {267, 268}
-                };
-                break;
-            case 1:
-                options = new int[][]{
-                    {130, 143},
-                    {131, 254},
-                    {132, 144},
-                    {233, 234},
-                    {251, 142},
-                    {263, 264},
-                    {265, 266},
-                    {267, 268}
-                };
-                break;
-            default:
-                options = new int[][]{
-                    {134, 137},
-                    {135, 138},
-                    {133, 136},
-                    {233, 234},
-                    {252, 255},
-                    {263, 264},
-                    {265, 266},
-                    {267, 268}
-                };
-                break;
-        }
-        return options[Util.nextInt(options.length)];
+        int[] setIds = ActivationSetCatalog.getStandardDropSetIds(gender);
+        int setId = setIds[Util.nextInt(setIds.length)];
+        ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.getDefinition(setId);
+        return definition == null ? new int[0] : definition.getOptionIds();
     }
 
     public int[] randOptionItemKichHoatNew(int gender) {
-        int op1;
-        int op2;
-        int op3;
-        int op4;
-        switch (gender) {
-            case 0: {
-                op1 = 245;
-                op2 = 246;
-                op3 = 247;
-                op4 = 248;
-                break;
-            }
-            case 1: {
-                op1 = 237;
-                op2 = 238;
-                op3 = 239;
-                op4 = 240;
-                break;
-            }
-            case 2: {
-                op1 = 241;
-                op2 = 242;
-                op3 = 243;
-                op4 = 244;
-                break;
-            }
-            default: {
-                op1 = 269;
-                op2 = 270;
-                op3 = 271;
-                op4 = 272;
-                break;
-            }
-        }
-        int[] options = {op1, op2, op3, op4};
-        return options;
+        int setId = ActivationSetCatalog.getAdvancedDropSetId(gender);
+        ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.getDefinition(setId);
+        return definition == null ? new int[0] : definition.getOptionIds();
     }
 
     public int randTempItemKichHoat_VIP(int gender) {
@@ -1135,9 +998,7 @@ public class ItemService {
 
             Item ao = ItemService.gI().otptl((short) dotl[ramdom]);
 
-            ao.addOptionParam(127, 0);
-
-            ao.addOptionParam(139, 0);
+            addActivationSetOptions(ao, 127);
 
             ao.addOptionParam(30, 0);
 
@@ -1163,9 +1024,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dotl.length);
 
             Item ao = ItemService.gI().otptl((short) dotl[ramdom]);
-            ao.addOptionParam(128, 0);
-
-            ao.addOptionParam(140, 0);
+            addActivationSetOptions(ao, 128);
 
             ao.addOptionParam(30, 0);
 
@@ -1191,9 +1050,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dotl.length);
 
             Item ao = ItemService.gI().otptl((short) dotl[ramdom]);
-            ao.addOptionParam(129, 0);
-
-            ao.addOptionParam(141, 0);
+            addActivationSetOptions(ao, 129);
 
             ao.addOptionParam(30, 0);
 
@@ -1219,9 +1076,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dotl.length);
 
             Item ao = ItemService.gI().otptl((short) dotl[ramdom]);
-            ao.addOptionParam(130, 0);
-
-            ao.addOptionParam(142, 0);
+            addActivationSetOptions(ao, 130);
 
             ao.addOptionParam(30, 0);
 
@@ -1246,8 +1101,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dotl.length);
 
             Item ao = ItemService.gI().otptl((short) dotl[ramdom]);
-            ao.addOptionParam(131, 0);
-            ao.addOptionParam(143, 0);
+            addActivationSetOptions(ao, 131);
             ao.addOptionParam(30, 0);
             if (InventoryService.gI().getCountEmptyBag(player) > 4) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1269,8 +1123,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dotl.length);
 
             Item ao = ItemService.gI().otptl((short) dotl[ramdom]);
-            ao.addOptionParam(132, 0);
-            ao.addOptionParam(144, 0);
+            addActivationSetOptions(ao, 132);
             ao.addOptionParam(30, 0);
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1292,8 +1145,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dotl.length);
 
             Item ao = ItemService.gI().otptl((short) dotl[ramdom]);
-            ao.addOptionParam(133, 0);
-            ao.addOptionParam(136, 0);
+            addActivationSetOptions(ao, 133);
             ao.addOptionParam(30, 0);
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1315,8 +1167,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dotl.length);
 
             Item ao = ItemService.gI().otptl((short) dotl[ramdom]);
-            ao.addOptionParam(134, 0);
-            ao.addOptionParam(137, 0);
+            addActivationSetOptions(ao, 134);
             ao.addOptionParam(30, 0);
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1338,8 +1189,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dotl.length);
 
             Item ao = ItemService.gI().otptl((short) dotl[ramdom]);
-            ao.addOptionParam(135, 0);
-            ao.addOptionParam(138, 0);
+            addActivationSetOptions(ao, 135);
             ao.addOptionParam(30, 0);
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1353,6 +1203,16 @@ public class ItemService {
         }
     }
 
+    private void addActivationSetOptions(Item item, int setOptionId) {
+        ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.getDefinition(setOptionId);
+        if (item == null || definition == null) {
+            return;
+        }
+        for (int optionId : definition.getOptionIds()) {
+            item.addOptionParam(optionId, 0);
+        }
+    }
+
     public void sethdkaio(Player player) {
         for (int i = 0; i < 1; i++) {
             Item hq = InventoryService.gI().findItem(player.inventory.itemsBag, 1704 + i);
@@ -1361,8 +1221,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dohd.length);
 
             Item ao = ItemService.gI().otphd((short) dohd[ramdom]);
-            ao.addOptionParam(127, 0);
-            ao.addOptionParam(139, 0);
+            addActivationSetOptions(ao, 127);
 
             ao.addOptionParam(30, 0);
 
@@ -1387,8 +1246,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dohd.length);
 
             Item ao = ItemService.gI().otphd((short) dohd[ramdom]);
-            ao.addOptionParam(128, 0);
-            ao.addOptionParam(140, 0);
+            addActivationSetOptions(ao, 128);
             ao.addOptionParam(30, 0);
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1410,8 +1268,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dohd.length);
 
             Item ao = ItemService.gI().otphd((short) dohd[ramdom]);
-            ao.addOptionParam(129, 0);
-            ao.addOptionParam(141, 0);
+            addActivationSetOptions(ao, 129);
             ao.addOptionParam(30, 0);
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1433,8 +1290,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dohd.length);
 
             Item ao = ItemService.gI().otphd((short) dohd[ramdom]);
-            ao.itemOptions.add(new ItemOption(130, 0));
-            ao.itemOptions.add(new ItemOption(142, 0));
+            addActivationSetOptions(ao, 130);
             ao.itemOptions.add(new ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1456,8 +1312,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dohd.length);
 
             Item ao = ItemService.gI().otphd((short) dohd[ramdom]);
-            ao.itemOptions.add(new ItemOption(131, 0));
-            ao.itemOptions.add(new ItemOption(143, 0));
+            addActivationSetOptions(ao, 131);
             ao.itemOptions.add(new ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1479,8 +1334,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dohd.length);
 
             Item ao = ItemService.gI().otphd((short) dohd[ramdom]);
-            ao.itemOptions.add(new ItemOption(132, 0));
-            ao.itemOptions.add(new ItemOption(144, 0));
+            addActivationSetOptions(ao, 132);
             ao.itemOptions.add(new ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 4) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1502,8 +1356,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dohd.length);
 
             Item ao = ItemService.gI().otphd((short) dohd[ramdom]);
-            ao.itemOptions.add(new ItemOption(133, 0));
-            ao.itemOptions.add(new ItemOption(136, 0));
+            addActivationSetOptions(ao, 133);
             ao.itemOptions.add(new ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1525,8 +1378,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dohd.length);
 
             Item ao = ItemService.gI().otphd((short) dohd[ramdom]);
-            ao.itemOptions.add(new ItemOption(134, 0));
-            ao.itemOptions.add(new ItemOption(137, 0));
+            addActivationSetOptions(ao, 134);
             ao.itemOptions.add(new ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);
@@ -1548,8 +1400,7 @@ public class ItemService {
             int ramdom = new Random().nextInt(dohd.length);
 
             Item ao = ItemService.gI().otphd((short) dohd[ramdom]);
-            ao.itemOptions.add(new ItemOption(135, 0));
-            ao.itemOptions.add(new ItemOption(138, 0));
+            addActivationSetOptions(ao, 135);
             ao.itemOptions.add(new ItemOption(30, 0));
             if (InventoryService.gI().getCountEmptyBag(player) > 1) {
                 InventoryService.gI().addItemBag(player, ao);

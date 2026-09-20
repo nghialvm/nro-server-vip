@@ -519,16 +519,9 @@ public class SkillService {
         switch (player.playerSkill.skillSelect.template.id) {
             case Skill.KAIOKEN: //kaioken
                 long startKaioken = System.currentTimeMillis();
-                if (player.nPoint.hp < player.nPoint.hpMax / 10) {
-                    Service.gI().sendThongBao(player, "Không thể dùng chiêu khi HP dưới 10%");
-                }
-                long hpUse = Util.CrisGH(player.nPoint.hpMax / 100 * 10);
-                if (player.setClothes.thanVuTruKaio == 4) {
-                    hpUse = Util.CrisGH(player.nPoint.hpMax / 100 * 5); // Nếu trang phục là 4, dùng 5% HP
-                } else if (player.setClothes.thanVuTruKaio == 5) {
-                    hpUse = Util.CrisGH(player.nPoint.hpMax / 100 * 3); // Nếu trang phục là 5, dùng 3% HP
-                }
+                long hpUse = getKaiokenHpCost(player);
                 if (Util.CrisGH(player.nPoint.hp) <= hpUse) {
+                    Service.gI().sendThongBao(player, "Không thể dùng chiêu khi HP không đủ");
                     break;
                 } else {
                     Service.gI().sendEffAllPlayer(player, 1031, 1, 10, 10);
@@ -920,7 +913,7 @@ public class SkillService {
                     //nổ
                     player.playerSkill.prepareTuSat = !player.playerSkill.prepareTuSat;
                     int rangeBom = SkillUtil.getRangeBom(player.playerSkill.skillSelect.point);
-                    if (player.setClothes.cadicM == 2) {
+                    if (player.setClothes.cadicM >= 2) {
                         rangeBom = SkillUtil.getRangeBom(player.playerSkill.skillSelect.point) + 200;
                     }
                     double dame = Util.CrisGH(player.nPoint.hpMax);
@@ -945,8 +938,12 @@ public class SkillService {
                     if (!MapService.gI().isMapOffline(player.zone.map.mapId)) {
                         for (Player pl : playersMap) {
                             if (!player.equals(pl) && canAttackPlayer(player, pl) && Util.getDistance(player, pl) <= rangeBom) {
-                                dame = pl.isBoss ? player.effectSkill.isMonkey ? dame / 3 : dame / 2 : dame;
-                                pl.injured(player, dame, MapService.gI().isMapYardart(player.zone.map.mapId), false);
+                                double damageToTarget = pl.isBoss
+                                        ? player.effectSkill.isMonkey ? dame / 3 : dame / 2
+                                        : dame;
+                                damageToTarget = applyChampaBossBonus(player, pl, damageToTarget);
+                                pl.injured(player, damageToTarget,
+                                        MapService.gI().isMapYardart(player.zone.map.mapId), false);
                                 PlayerService.gI().sendInfoHpMpMoney(pl);
                                 Service.gI().Send_Info_NV(pl);
                             }
@@ -1079,6 +1076,24 @@ public class SkillService {
         }
     }
 
+    private double applyChampaBossBonus(Player attacker, Player target, double damage) {
+        if (attacker == null || target == null || !target.isBoss || attacker.setClothes == null) {
+            return damage;
+        }
+
+        int pieces = attacker.setClothes.thanhuydietchampa;
+        if (pieces < 2) {
+            return damage;
+        }
+
+        int bossBonus = pieces >= 5 ? 100 : pieces >= 4 ? 50 : 20;
+        double result = damage + damage * bossBonus / 100;
+        if (pieces >= 5 && attacker.nPoint.isCrit) {
+            result += result * 50 / 100;
+        }
+        return result;
+    }
+
     private void playerAttackPlayer(Player plAtt, Player plInjure, boolean miss) {
         if (plInjure.effectSkill.anTroi) {
             plAtt.nPoint.isCrit100 = true;
@@ -1116,6 +1131,8 @@ public class SkillService {
                 finalDame += Util.CrisGH((finalDame / 100) * tlDameBoss);
             }
         }
+
+        finalDame = applyChampaBossBonus(plAtt, plInjure, finalDame);
 
         // ============================================================
         // 🔹 3. TÍNH TOÁN DAME GÂY RA
@@ -1348,32 +1365,58 @@ public class SkillService {
         }
     }
 
+    private int getKaiokenCostPercent(Player player) {
+        if (player.setClothes.thanVuTruKaio >= 5) {
+            return 3;
+        }
+        if (player.setClothes.thanVuTruKaio >= 4) {
+            return 5;
+        }
+        return 10;
+    }
+
+    private long getKaiokenHpCost(Player player) {
+        if (player.isBoss && player instanceof Rival) {
+            return 0;
+        }
+        return Util.CrisGH(player.nPoint.hpMax * getKaiokenCostPercent(player) / 100);
+    }
+
+    private long getSkillManaCost(Player player) {
+        Skill skill = player.playerSkill.skillSelect;
+        if (skill == null) {
+            return Long.MAX_VALUE;
+        }
+
+        long cost;
+        switch (skill.template.manaUseType) {
+            case 0:
+                cost = skill.manaUse;
+                break;
+            case 1:
+                cost = player.nPoint.mpMax * skill.manaUse / 100;
+                break;
+            case 2:
+                cost = skill.template.id == Skill.KAIOKEN ? player.nPoint.mpMax : 1;
+                break;
+            default:
+                return Long.MAX_VALUE;
+        }
+        if (skill.template.id == Skill.KAIOKEN) {
+            cost = cost * getKaiokenCostPercent(player) / 100;
+        }
+        return Util.CrisGH(cost);
+    }
+
     public boolean canUseSkillWithMana(Player player) {
         if (player.playerSkill.skillSelect != null) {
             if (player.playerSkill.skillSelect.template.id == Skill.KAIOKEN) {
-                long hpUse = Util.CrisGH(player.nPoint.hpMax / 100 * 10);
-                if (player.isBoss && player instanceof Rival) {
-                    hpUse = 0;
-                }
+                long hpUse = getKaiokenHpCost(player);
                 if (Util.CrisGH(player.nPoint.hp) <= hpUse) {
                     return false;
                 }
             }
-            switch (player.playerSkill.skillSelect.template.manaUseType) {
-                case 0: {
-                    return Util.CrisGH(player.nPoint.mp) >= player.playerSkill.skillSelect.manaUse;
-                }
-                case 1: {
-                    long mpUse = Util.CrisGH((player.nPoint.mpMax * player.playerSkill.skillSelect.manaUse / 100));
-                    return Util.CrisGH(player.nPoint.mp) >= mpUse;
-                }
-                case 2: {
-                    return Util.CrisGH(player.nPoint.mp) > 0;
-                }
-                default: {
-                    return false;
-                }
-            }
+            return Util.CrisGH(player.nPoint.mp) >= getSkillManaCost(player);
         } else {
             return false;
         }
@@ -1420,23 +1463,12 @@ public class SkillService {
             return;
         }
         if (player.playerSkill.skillSelect != null) {
-            switch (player.playerSkill.skillSelect.template.manaUseType) {
-                case 0: {
-                    if (Util.CrisGH(player.nPoint.mp) >= player.playerSkill.skillSelect.manaUse) {
-                        player.nPoint.setMp(Util.CrisGH(player.nPoint.mp - player.playerSkill.skillSelect.manaUse));
-                    }
-                    break;
-                }
-                case 1: {
-                    long mpUse = Util.CrisGH(player.nPoint.mpMax * player.playerSkill.skillSelect.manaUse / 100);
-                    if (Util.CrisGH(player.nPoint.mp) >= mpUse) {
-                        player.nPoint.setMp(Util.CrisGH(player.nPoint.mp - mpUse));
-                    }
-                    break;
-                }
-                case 2:
-                    player.nPoint.setMp(Util.CrisGH(0));
-                    break;
+            long mpUse = getSkillManaCost(player);
+            if (player.playerSkill.skillSelect.template.manaUseType == 2
+                    && player.playerSkill.skillSelect.template.id != Skill.KAIOKEN) {
+                player.nPoint.setMp(0);
+            } else if (mpUse != Long.MAX_VALUE && Util.CrisGH(player.nPoint.mp) >= mpUse) {
+                player.nPoint.setMp(Util.CrisGH(player.nPoint.mp - mpUse));
             }
             PlayerService.gI().sendInfoHpMpMoney(player);
         }

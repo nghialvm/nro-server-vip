@@ -2,6 +2,7 @@ package nro.player;
 
 import models.Item.Item;
 import models.Item.ItemOption;
+import models.Item.ActivationSetCatalog;
 
 public class SetClothes {
 
@@ -133,90 +134,76 @@ public class SetClothes {
             if (item.isNotNullItem()) {
                 boolean isActSet = false;
                 for (ItemOption io : item.itemOptions) {
-                    switch (io.optionTemplate.id) {
+                    ActivationSetCatalog.SetDefinition definition
+                            = ActivationSetCatalog.getByOptionId(io.optionTemplate.id);
+                    int optionId = definition == null
+                            ? io.optionTemplate.id : definition.getSetOptionId();
+                    switch (optionId) {
                         //traidat
                         case 129:
-                        case 141:
                             isActSet = true;
                             songoku++;
                             break;
                         case 127:
-                        case 139:
                             isActSet = true;
                             thienXinHang++;
                             break;
                         case 128:
-                        case 140:
                             isActSet = true;
                             kirin++;
                             break;
                         case 250:
-                        case 253:
                             isActSet = true;
                             yamcha++;
                             break;
                         //namec
                         case 131:
-//                      case 143:
-                        case 254:
                             isActSet = true;
                             ocTieu++;
                             break;
                         case 132:
-                        case 144:
                             isActSet = true;
                             pikkoroDaimao++;
                             break;
                         case 130:
-                        case 143:
                             isActSet = true;
                             picolo++;
                             break;
                         case 251:
-//                        case 254:
-                        case 142:
                             isActSet = true;
                             slug++;
                             break;
                         //xayda
                         case 135:
-                        case 138:
                             isActSet = true;
                             nappa++;
                             break;
                         case 133:
-                        case 136:
                             isActSet = true;
                             kakarot++;
                             break;
                         case 134:
-                        case 137:
                             isActSet = true;
                             cadic++;
                             break;
                         case 252:
-                        case 255:
                             isActSet = true;
                             broly++;
                             break;
                         //new
                         case 233:
-                        case 234:
                             isActSet = true;
                             gohan++;
                             break;
                         case 263:
-                        case 264:
                             isActSet = true;
                             goten++;
                             break;
                         case 265:
-                        case 266:
                             isActSet = true;
                             frieza++;
                             break;
                         case 267:
-                        case 268:
                             isActSet = true;
                             cumber++;
                             break;
@@ -242,32 +229,24 @@ public class SetClothes {
             if (item.isNotNullItem()) {
                 boolean isActSet = false;
                 for (ItemOption io : item.itemOptions) {
-                    switch (io.optionTemplate.id) {
+                    ActivationSetCatalog.SetDefinition definition
+                            = ActivationSetCatalog.getByOptionId(io.optionTemplate.id);
+                    int optionId = definition == null
+                            ? io.optionTemplate.id : definition.getSetOptionId();
+                    switch (optionId) {
                         case 245:
-                        case 246:
-                        case 247:
-                        case 248:
                             isActSet = true;
                             thanVuTruKaio++;
                             break;
                         case 237:
-                        case 238:
-                        case 239:
-                        case 240:
                             isActSet = true;
                             nail++;
                             break;
                         case 241:
-                        case 242:
-                        case 243:
-                        case 244:
                             isActSet = true;
                             cadicM++;
                             break;
                         case 269:
-                        case 270:
-                        case 271:
-                        case 272:
                             isActSet = true;
                             thanhuydietchampa++;
                             break;

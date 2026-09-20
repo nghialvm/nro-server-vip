@@ -8,6 +8,7 @@ import consts.ConstNpc;
 import models.Item.Item;
 import models.Item.ItemOption;
 import models.Item.ItemService;
+import models.Item.ActivationSetCatalog;
 import nro.combine.CombineService;
 
 public class NangCapKichHoatVip {
@@ -26,6 +27,45 @@ public class NangCapKichHoatVip {
             if (id == tempId) return true;
         }
         return false;
+    }
+
+    static Item createVipActivationItem(Player player, ActivationSetCatalog.SetDefinition definition) {
+        if (player == null || definition == null) {
+            return null;
+        }
+
+        short tempId = (short) ItemService.gI().randTempItemKichHoat_VIP(player.gender);
+        Item item = ItemService.gI().itemSKH(tempId, definition);
+        if (item == null) {
+            return null;
+        }
+
+        if (isVipLastItem(item.template.id)) {
+            int value;
+            switch (item.template.type) {
+                case 0:
+                    value = Util.nextInt(1200, 1400);
+                    item.itemOptions.add(0, new ItemOption(47, value));
+                    break;
+                case 1:
+                    value = Util.nextInt(48000, 55000);
+                    item.itemOptions.add(0, new ItemOption(6, value));
+                    break;
+                case 2:
+                    value = Util.nextInt(3500, 4000);
+                    item.itemOptions.add(0, new ItemOption(0, value));
+                    break;
+                case 3:
+                    value = Util.nextInt(48000, 55000);
+                    item.itemOptions.add(0, new ItemOption(7, value));
+                    break;
+                case 4:
+                    value = Util.nextInt(13, 15);
+                    item.itemOptions.add(0, new ItemOption(14, value));
+                    break;
+            }
+        }
+        return item;
     }
     public static void showInfoCombine(Player player) {
         if (player.combine.itemsCombine.isEmpty()) {
@@ -135,21 +175,13 @@ public class NangCapKichHoatVip {
             }
         };
 
-        int[][] options = {
-            {128,129,127},
-            {130,131,132},
-            {133,135,134}
-        };
-
-        int rd = Util.nextInt(1, 100);
-        int skhId = (rd <= 25) ? 0 : (rd <= 60 ? 1 : 2);
-
         int[] arr = items[player.gender][i1.template.type];
         int tempId = arr[Util.nextInt(arr.length)];
+        ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.randomOldSet(player.gender);
 
         Item item = ItemService.gI().itemSKH(
                 tempId,
-                options[player.gender][skhId]
+                definition
         );
 
         if (item != null && isVipLastItem(item.template.id)) {

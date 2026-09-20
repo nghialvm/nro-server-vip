@@ -1117,7 +1117,7 @@ public class NPoint {
 
         // Xử lý set nappa
         if (this.player.setClothes.nappa == 5) {
-            hpMax += calPercent(hpMax, 100);
+            hpMax += calPercent(hpMax, 200);
         }
 
         if (this.player.setClothes.cadicM >= 2) {
@@ -1343,7 +1343,7 @@ if (hasFull5NhatAn()) {
 //            mpMax *= 2;
 //        }
         if (this.player.setClothes.picolo == 5) {
-            mpMax *= 2;
+            mpMax += calPercent(mpMax, 200);
         }
 
         if (this.player.isPl()) {
@@ -2350,16 +2350,15 @@ if (hasFull5NhatAn()) {
                 if (this.player.setClothes.nail == 5) {
                     percentXDame = 50;
                 }
+                if (this.player.setClothes.slug == 5) {
+                    percentXDame += 50;
+                }
                 percentDameSkill = skillSelect.damage;
                 break;
             case Skill.LIEN_HOAN:
                 if (intrinsic.id == 13) {
                     percentDameIntrinsic = intrinsic.param1;
                 }
-//                percentDameSkill = skillSelect.damage;
-//                if (this.player.setClothes.slug == 5) {
-//                    percentXDame = 100;
-//                }
                 percentDameSkill = skillSelect.damage;
                 if (this.player.setClothes.ocTieu == 5) {
                     percentXDame = 100;
@@ -2381,7 +2380,7 @@ if (hasFull5NhatAn()) {
                 if (this.player.setClothes.cadicM == 4) {
                     percentXDame = 20;
                 } else if (this.player.setClothes.cadicM == 5) {
-                    percentXDame = 40;
+                    percentXDame = 50;
                 }
                 break;
             case Skill.DICH_CHUYEN_TUC_THOI:
@@ -2675,7 +2674,7 @@ if (hasFull5NhatAn()) {
 
         // Set goten
         if (this.player.setClothes.goten == 5) {
-            tiemNang += originalTiemNang * 5;
+            tiemNang += originalTiemNang * 3;
         }
 
         // Nếu là đệ tử
