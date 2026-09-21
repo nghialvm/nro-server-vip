@@ -55,6 +55,13 @@ public final class ActivationSetCatalog {
         {133, 135, 134}
     };
 
+    /* Set pool used by normal and VIP activation upgrades. */
+    private static final int[][] UPGRADE_SET_IDS_BY_GENDER = {
+        {129, 127, 128, 250}, // Earth: includes Yamcha
+        {130, 131, 132},
+        {133, 135, 134}
+    };
+
     private static final int[][] STANDARD_DROP_SET_IDS_BY_GENDER = {
         {128, 127, 129, 233, 250, 263, 265, 267},
         {130, 131, 132, 233, 251, 263, 265, 267},
@@ -142,6 +149,10 @@ public final class ActivationSetCatalog {
         return OLD_SET_IDS_BY_GENDER[normalizeGender(gender)].clone();
     }
 
+    public static int[] getUpgradeSetIds(int gender) {
+        return UPGRADE_SET_IDS_BY_GENDER[normalizeGender(gender)].clone();
+    }
+
     public static int[] getStandardDropSetIds(int gender) {
         return STANDARD_DROP_SET_IDS_BY_GENDER[normalizeGender(gender)].clone();
     }
@@ -165,6 +176,11 @@ public final class ActivationSetCatalog {
 
     public static SetDefinition randomOldSet(int gender) {
         int[] ids = getOldSetIds(gender);
+        return getDefinition(ids[Util.nextInt(ids.length)]);
+    }
+
+    public static SetDefinition randomUpgradeSet(int gender) {
+        int[] ids = getUpgradeSetIds(gender);
         return getDefinition(ids[Util.nextInt(ids.length)]);
     }
 

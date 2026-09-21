@@ -177,7 +177,7 @@ public class NangCapKichHoatVip {
 
         int[] arr = items[player.gender][i1.template.type];
         int tempId = arr[Util.nextInt(arr.length)];
-        ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.randomOldSet(player.gender);
+        ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.randomUpgradeSet(player.gender);
 
         Item item = ItemService.gI().itemSKH(
                 tempId,

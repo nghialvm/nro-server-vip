@@ -70,7 +70,7 @@ public class NangCapKichHoat {
         player.inventory.gold -= GOLD_REQUIRE;
         Service.gI().sendMoney(player);
 
-        ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.randomOldSet(player.gender);
+        ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.randomUpgradeSet(player.gender);
 
         // ✅ Sinh đồ Kích Hoạt mới theo hệ của nhân vật
         Item newItem = (huyDiet.template.type == 4)
