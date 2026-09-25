@@ -95,7 +95,7 @@ public final class NangCapKichHoatMoi {
         }
 
         ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.randomNewSet(player.gender);
-        Item item = NangCapKichHoatVip.createVipActivationItem(player, definition);
+        Item item = NangCapKichHoatVip.createVipActivationItem(player, definition, first.template.type);
         if (item == null) {
             player.inventory.gold += COST;
             Service.gI().sendMoney(player);

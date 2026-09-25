@@ -29,12 +29,15 @@ public class NangCapKichHoatVip {
         return false;
     }
 
-    static Item createVipActivationItem(Player player, ActivationSetCatalog.SetDefinition definition) {
+    static Item createVipActivationItem(Player player, ActivationSetCatalog.SetDefinition definition, int itemType) {
         if (player == null || definition == null) {
             return null;
         }
 
-        short tempId = (short) ItemService.gI().randTempItemKichHoat_VIP(player.gender);
+        int tempId = ItemService.gI().randTempItemKichHoat_VIP(player.gender, itemType);
+        if (tempId < 0) {
+            return null;
+        }
         Item item = ItemService.gI().itemSKH(tempId, definition);
         if (item == null) {
             return null;
@@ -151,63 +154,15 @@ public class NangCapKichHoatVip {
             CombineService.gI().reOpenItemCombine(player);
             return;
         }
-        int[][][] items = {
-            { 
-                {0,3,33,34,136,137,138,139,230,231,232,233,555},
-                {6,9,35,36,140,141,142,143,242,243,244,245,556},
-                {21,24,37,38,144,145,146,147,254,255,256,257,562},
-                {27,30,39,40,148,149,150,151,266,267,268,269,563},
-                {12,57,58,59,184,185,186,187,278,279,280,281,561}
-            },
-            { 
-                {1,4,41,42,152,153,154,155,234,235,236,237,557},
-                {7,10,43,44,156,157,158,159,246,247,248,249,558},
-                {22,25,45,46,160,161,162,163,258,259,260,261,564},
-                {28,31,47,48,164,165,166,167,270,271,272,273,565},
-                {12,57,58,59,184,185,186,187,278,279,280,281,561}
-            },
-            { 
-                {2,5,49,50,168,169,170,171,238,239,240,241,559},
-                {8,11,51,52,172,173,174,175,250,251,252,253,560},
-                {23,26,53,54,176,177,178,179,262,263,264,265,566},
-                {29,32,55,56,180,181,182,183,274,275,276,277,567},
-                {12,57,58,59,184,185,186,187,278,279,280,281,561}
-            }
-        };
-
-        int[] arr = items[player.gender][i1.template.type];
-        int tempId = arr[Util.nextInt(arr.length)];
         ActivationSetCatalog.SetDefinition definition = ActivationSetCatalog.randomUpgradeSet(player.gender);
-
-        Item item = ItemService.gI().itemSKH(
-                tempId,
-                definition
-        );
-
-        if (item != null && isVipLastItem(item.template.id)) {
-            int value;
-            switch (item.template.type) {
-                case 0:
-                    value = Util.nextInt(1200, 1400);
-                    item.itemOptions.add(0, new ItemOption(47, value));
-                    break;
-                case 1:
-                    value = Util.nextInt(48000, 55000);
-                    item.itemOptions.add(0, new ItemOption(6, value));
-                    break;
-                case 2:
-                    value = Util.nextInt(3500, 4000);
-                    item.itemOptions.add(0, new ItemOption(0, value));
-                    break;
-                case 3:
-                    value = Util.nextInt(48000, 55000);
-                    item.itemOptions.add(0, new ItemOption(7, value));
-                    break;
-                case 4:
-                    value = Util.nextInt(13, 15);
-                    item.itemOptions.add(0, new ItemOption(14, value));
-                    break;
-            }
+        Item item = createVipActivationItem(player, definition, i1.template.type);
+        if (item == null) {
+            player.inventory.gold += COST;
+            Service.gI().sendMoney(player);
+            Service.gI().sendThongBao(player, "Không tạo được trang bị, vui lòng thử lại");
+            player.combine.itemsCombine.clear();
+            CombineService.gI().reOpenItemCombine(player);
+            return;
         }
 
         CombineService.gI().sendEffectSuccessCombine(player);

@@ -772,6 +772,10 @@ public class ItemService {
     }
 
     public int randTempItemKichHoat_VIP(int gender) {
+        return randTempItemKichHoat_VIP(gender, Util.nextInt(5));
+    }
+
+    public int randTempItemKichHoat_VIP(int gender, int type) {
         int[][][] items = {
             {{0, 0}, {1, 1}, {2, 2}, {0, 33}, {1, 41}, {2, 49}, {0, 3}, {1, 4}, {2, 5}, {0, 34}, {0, 136}, {0, 137}, {0, 138}, {0, 139}, {0, 230}, {0, 231}, {0, 232}, {0, 233},
             {1, 42}, {1, 152}, {1, 153}, {1, 154}, {1, 155}, {1, 234}, {1, 235}, {1, 236}, {1, 237}, {2, 50}, {2, 168}, {2, 169}, {2, 170}, {2, 171}, {2, 238}, {2, 239},
@@ -787,19 +791,17 @@ public class ItemService {
             {2, 277}},
             {{3, 12}, {3, 57}, {3, 58}, {3, 59}, {3, 184}, {3, 185}, {3, 186}, {3, 187}, {3, 278}, {3, 279}, {3, 280}, {3, 281}}
         };
-        for (int j = 0; j < 1; j++) {
-            int type = Util.nextInt(items.length);
-            List<Integer> candidates = new ArrayList<>();
-            for (int[] pair : items[type]) {
-                if (pair[0] == gender || pair[0] == 3) {
-                    candidates.add(pair[1]);
-                }
-            }
-            if (!candidates.isEmpty()) {
-                return candidates.get(Util.nextInt(candidates.size()));
+        if (type < 0 || type >= items.length) {
+            return -1;
+        }
+
+        List<Integer> candidates = new ArrayList<>();
+        for (int[] pair : items[type]) {
+            if (pair[0] == gender || pair[0] == 3) {
+                candidates.add(pair[1]);
             }
         }
-        return 0;
+        return candidates.isEmpty() ? -1 : candidates.get(Util.nextInt(candidates.size()));
     }
 
     public ItemMap randDoTL(Zone zone, int quantity, int x, int y, long id) {

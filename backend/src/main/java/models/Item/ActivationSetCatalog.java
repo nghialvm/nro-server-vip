@@ -74,7 +74,7 @@ public final class ActivationSetCatalog {
      * the planet-specific sets declared in SetClothes.
      */
     private static final int[][] NEW_SET_IDS_BY_GENDER = {
-        {250, 245, 233, 263, 265, 267, 269}, // Earth: Yamcha, Kaio + shared
+        {245, 233, 263, 265, 267, 269}, // Earth: Kaio + shared (Yamcha is upgrade-only)
         {251, 237, 233, 263, 265, 267, 269}, // Namek: Slug, Nail + shared
         {252, 241, 233, 263, 265, 267, 269}  // Saiyan: Broly, Cadic M + shared
     };
